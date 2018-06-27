@@ -8,6 +8,7 @@ Golang logger,Integrate logrus and sentry,support logroate
 <a href="https://godoc.org/github.com/verystar/logger"><img src="https://godoc.org/github.com/verystar/logger?status.svg" alt="GoDoc"></a>
 <a href="https://opensource.org/licenses/mit-license.php" rel="nofollow"><img src="https://badges.frapsoft.com/os/mit/mit.svg?v=103"></a>
 </p>
+
 ## Default logger
 
 default log out to os.Stderr
