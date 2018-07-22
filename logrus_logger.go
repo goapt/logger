@@ -10,7 +10,7 @@ var _ ILogger = (*LogrusLogger)(nil)
 // LogrusLogger file logger
 type LogrusLogger struct {
 	*logrus.Logger
-	Conf *Config
+	Fingerprint bool
 }
 
 // NewFileLogger providers a file logger based on logrus
@@ -23,14 +23,13 @@ func NewLogrusLogger(option func(l *LogrusLogger)) (ILogger) {
 			},
 			Hooks: make(logrus.LevelHooks),
 		},
-		Conf:&Config{},
 	}
 	option(l)
 	return l
 }
 
 func (l *LogrusLogger) withFields(format string) ILogger {
-	if l.Conf.LogSentryDSN != "" {
+	if l.Fingerprint {
 		return l.Logger.WithFields(logrus.Fields{
 			"fingerprint": []string{format},
 		})

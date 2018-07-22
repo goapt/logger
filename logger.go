@@ -46,17 +46,17 @@ func NewLogger(option func(*Config)) ILogger {
 
 func newLogger(conf *Config) ILogger {
 	return NewLogrusLogger(func(l *LogrusLogger) {
-		l.Logger.Level, _ = logrus.ParseLevel(conf.LogLevel)
-		l.Conf = conf
+		l.Level, _ = logrus.ParseLevel(conf.LogLevel)
 
 		if conf.LogMode == "file" {
 			hook, err := NewFileHook(conf)
 			if err == nil {
-				l.Logger.Hooks.Add(hook)
+				l.Hooks.Add(hook)
 			}
 		}
 
 		if conf.LogSentryDSN != "" {
+			l.Fingerprint = true
 			tags := map[string]string{
 				"type": conf.LogSentryType,
 			}
@@ -72,7 +72,7 @@ func newLogger(conf *Config) ILogger {
 			hook.StacktraceConfiguration.Enable = true
 
 			if err == nil {
-				l.Logger.Hooks.Add(hook)
+				l.Hooks.Add(hook)
 			}
 		}
 	})

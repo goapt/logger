@@ -8,7 +8,7 @@ import (
 
 func TestNewFileHook(t *testing.T) {
 	log := NewLogrusLogger(func(l *LogrusLogger) {
-		l.Logger.Level = logrus.DebugLevel
+		l.Level = logrus.DebugLevel
 		hook, err := NewFileHook(&Config{
 			LogName:     "test",
 			LogPath:     "/tmp/",
@@ -16,7 +16,7 @@ func TestNewFileHook(t *testing.T) {
 			LogMaxFiles: 15,
 		})
 		if err == nil {
-			l.Logger.Hooks.Add(hook)
+			l.Hooks.Add(hook)
 		}
 	})
 
@@ -25,7 +25,7 @@ func TestNewFileHook(t *testing.T) {
 
 func BenchmarkNewFileHook(b *testing.B) {
 	log := NewLogrusLogger(func(l *LogrusLogger) {
-		l.Logger.Level = logrus.DebugLevel
+		l.Level = logrus.DebugLevel
 		hook, err := NewFileHook(&Config{
 			LogName:     "bench_test",
 			LogPath:     "/tmp/",
@@ -33,7 +33,7 @@ func BenchmarkNewFileHook(b *testing.B) {
 			LogMaxFiles: 15,
 		})
 		if err == nil {
-			l.Logger.Hooks.Add(hook)
+			l.Hooks.Add(hook)
 		}
 	})
 
