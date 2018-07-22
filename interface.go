@@ -3,14 +3,21 @@ package logger
 const (
 	LevelDebug = "debug"
 	LevelInfo  = "info"
+	LevelWarn  = "warn"
 	LevelError = "error"
 	LevelFatal = "fatal"
 )
 
 // ILogger is the logger interface
 type ILogger interface {
-	Fatal(string, ...interface{})
-	Debug(string, ...interface{})
-	Info(string, ...interface{})
-	Error(string, ...interface{})
+	Fatalf(string, ...interface{})
+	Debugf(string, ...interface{})
+	Infof(string, ...interface{})
+	Warnf(string, ...interface{})
+	Errorf(string, ...interface{})
+	Fatal(...interface{})
+	Debug(...interface{})
+	Info(...interface{})
+	Warn(...interface{})
+	Error(...interface{})
 }

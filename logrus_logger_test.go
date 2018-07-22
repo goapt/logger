@@ -6,8 +6,8 @@ import (
 )
 
 func TestNewLogrusLogger(t *testing.T) {
-	log := NewLogrusLogger(func(l *logrus.Logger) {
+	log := NewLogrusLogger(func(l *LogrusLogger) {
 		l.Level = logrus.DebugLevel
 	})
-	log.Debug("test %s","cccc")
+	log.Debugf("test %s","cccc")
 }
