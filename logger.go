@@ -29,40 +29,24 @@ func init() {
 		LogMode:  "std",
 		LogLevel: "debug",
 	}
-	std = NewLogger()
+	std = newLogger(defaultConfig)
 }
 
-func Setting(options ...func(*Config)) {
-	for _, option := range options {
-		option(defaultConfig)
-	}
-
-	std = NewLogger(options...)
+func Setting(option func(*Config)) {
+	option(defaultConfig)
+	std = newLogger(defaultConfig)
 }
 
-func NewLogger(options ...func(*Config)) ILogger {
+func NewLogger(option func(*Config)) ILogger {
+	//copy default config
 	conf := *defaultConfig
-
-	for _, option := range options {
-		option(&conf)
-	}
-
+	option(&conf)
 	return newLogger(&conf)
 }
 
 func newLogger(conf *Config) ILogger {
-	return NewLogrusLogger(func(l *logrus.Logger) {
-
-		switch conf.LogLevel {
-		case LevelDebug:
-			l.Level = logrus.DebugLevel
-		case LevelInfo:
-			l.Level = logrus.InfoLevel
-		case LevelError:
-			l.Level = logrus.ErrorLevel
-		case LevelFatal:
-			l.Level = logrus.FatalLevel
-		}
+	return NewLogrusLogger(func(l *LogrusLogger) {
+		l.Level, _ = logrus.ParseLevel(conf.LogLevel)
 
 		if conf.LogMode == "file" {
 			hook, err := NewFileHook(conf)
@@ -72,6 +56,7 @@ func newLogger(conf *Config) ILogger {
 		}
 
 		if conf.LogSentryDSN != "" {
+			l.Fingerprint = true
 			tags := map[string]string{
 				"type": conf.LogSentryType,
 			}
@@ -80,6 +65,7 @@ func newLogger(conf *Config) ILogger {
 				logrus.PanicLevel,
 				logrus.FatalLevel,
 				logrus.ErrorLevel,
+				logrus.WarnLevel,
 				logrus.InfoLevel,
 			})
 			hook.Timeout = 1 * time.Second
@@ -92,18 +78,42 @@ func newLogger(conf *Config) ILogger {
 	})
 }
 
-func Debug(str string, args ...interface{}) {
-	std.Debug(str, args...)
+func Debugf(str string, args ...interface{}) {
+	std.Debugf(str, args...)
 }
 
-func Info(str string, args ...interface{}) {
-	std.Info(str, args...)
+func Infof(str string, args ...interface{}) {
+	std.Infof(str, args...)
 }
 
-func Error(str string, args ...interface{}) {
-	std.Error(str, args...)
+func Warnf(str string, args ...interface{}) {
+	std.Warnf(str, args...)
 }
 
-func Fatal(str string, args ...interface{}) {
-	std.Fatal(str, args...)
+func Errorf(str string, args ...interface{}) {
+	std.Errorf(str, args...)
+}
+
+func Fatalf(str string, args ...interface{}) {
+	std.Fatalf(str, args...)
+}
+
+func Debug(args ...interface{}) {
+	std.Debug(args...)
+}
+
+func Info(args ...interface{}) {
+	std.Info(args...)
+}
+
+func Warn(args ...interface{}) {
+	std.Warn(args...)
+}
+
+func Error(args ...interface{}) {
+	std.Error(args...)
+}
+
+func Fatal(args ...interface{}) {
+	std.Fatal(args...)
 }
