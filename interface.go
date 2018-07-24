@@ -1,13 +1,5 @@
 package logger
 
-const (
-	LevelDebug = "debug"
-	LevelInfo  = "info"
-	LevelWarn  = "warn"
-	LevelError = "error"
-	LevelFatal = "fatal"
-)
-
 // ILogger is the logger interface
 type ILogger interface {
 	Fatalf(string, ...interface{})
