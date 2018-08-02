@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	isTest = true
+	m.Run()
+}
+
 func TestNewLogger(t *testing.T) {
 	log := NewLogger(func(c *Config) {
 		c.LogName = "test"

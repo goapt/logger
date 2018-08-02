@@ -10,13 +10,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var logHandler = sync.Map{}
-
 // FileHook to send logs via syslog.
 type FileHook struct {
 	conf    *Config
 	logFile string
-	mu      sync.RWMutex
+	mu      *sync.RWMutex
+	cache   *sync.Map
 }
 
 func NewFileHook(conf *Config) (*FileHook, error) {
@@ -29,32 +28,34 @@ func NewFileHook(conf *Config) (*FileHook, error) {
 	}
 
 	hook := &FileHook{
-		conf: conf,
+		conf:  conf,
+		mu:    &sync.RWMutex{},
+		cache: &sync.Map{},
 	}
 	return hook, nil
 }
 
-func (hook *FileHook) Fire(entry *logrus.Entry) error {
-	hook.mu.Lock()
-	defer hook.mu.Unlock()
-	if hook.conf.LogMaxFiles > 0 {
-		delDate := time.Now().AddDate(0, 0, -hook.conf.LogMaxFiles).Format("2006-01-02")
-		os.Remove(hook.conf.LogPath + hook.conf.LogName + "-" + delDate + ".log")
+func (h *FileHook) Fire(entry *logrus.Entry) error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if h.conf.LogMaxFiles > 0 {
+		delDate := time.Now().AddDate(0, 0, -h.conf.LogMaxFiles).Format("2006-01-02")
+		os.Remove(h.conf.LogPath + h.conf.LogName + "-" + delDate + ".log")
 	}
 
 	d := time.Now().Format("2006-01-02")
-	logFile := filepath.Join(hook.conf.LogPath, hook.conf.LogName+"-"+d+".log")
+	logFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+d+".log")
 
 	var logWriter *os.File
-	f, ok := logHandler.Load(logFile)
+	f, ok := h.cache.Load(logFile)
 	if !ok {
 		var err error
 		logWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 		if err != nil {
 			return fmt.Errorf("can't open file: path = %v, err = %v", logFile, err)
 		}
-		logHandler.Store(logFile, logWriter)
-	}else {
+		h.cache.Store(logFile, logWriter)
+	} else {
 		logWriter = f.(*os.File)
 	}
 
@@ -62,6 +63,6 @@ func (hook *FileHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-func (hook *FileHook) Levels() []logrus.Level {
+func (h *FileHook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }

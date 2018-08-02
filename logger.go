@@ -12,6 +12,7 @@ type Config struct {
 	LogPath       string `toml:"log_path" json:"log_path"`
 	LogMode       string `toml:"log_mode" json:"log_mode"`
 	LogLevel      string `toml:"log_level" json:"log_level"`
+	LogDetail     bool   `toml:"log_detail" json:"log_detail"`
 	LogMaxFiles   int    `toml:"log_max_files" json:"log_max_files"`
 	LogSentryDSN  string `toml:"log_sentry_dsn" json:"log_sentry_dsn"`
 	LogSentryType string `toml:"log_sentry_type" json:"log_sentry_type"`
@@ -47,6 +48,13 @@ func NewLogger(option func(*Config)) ILogger {
 func newLogger(conf *Config) ILogger {
 	return NewLogrusLogger(func(l *LogrusLogger) {
 		l.Level, _ = logrus.ParseLevel(conf.LogLevel)
+
+		if conf.LogDetail {
+			hook, err := NewLineHook(conf)
+			if err == nil {
+				l.Hooks.Add(hook)
+			}
+		}
 
 		if conf.LogMode == "file" {
 			hook, err := NewFileHook(conf)
