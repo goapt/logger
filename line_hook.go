@@ -1,13 +1,14 @@
 package logger
 
 import (
-	"sync"
 	"github.com/sirupsen/logrus"
-	"runtime"
 	"path"
+	"runtime"
+	"sync"
 )
 
 const skipFrames = 8
+
 var isTest = false
 
 type LineHook struct {

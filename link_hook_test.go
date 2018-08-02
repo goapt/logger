@@ -10,9 +10,9 @@ func TestNewLineHook(t *testing.T) {
 	log := NewLogrusLogger(func(l *LogrusLogger) {
 		l.Level = logrus.DebugLevel
 		hook, err := NewLineHook(&Config{
-			LogName:     "test",
-			LogLevel:    "debug",
-			LogDetail:   true,
+			LogName:   "test",
+			LogLevel:  "debug",
+			LogDetail: true,
 		})
 		if err == nil {
 			l.Hooks.Add(hook)
