@@ -8,11 +8,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"runtime"
-	"path"
 )
-
-const skipFrames = 7
 
 // FileHook to send logs via syslog.
 type FileHook struct {
@@ -61,17 +57,6 @@ func (h *FileHook) Fire(entry *logrus.Entry) error {
 		h.cache.Store(logFile, logWriter)
 	} else {
 		logWriter = f.(*os.File)
-	}
-
-
-	if h.conf.LogDetail {
-		pc, file, lineno, _ := runtime.Caller(skipFrames)
-		fu := runtime.FuncForPC(pc)
-		name := fu.Name()
-		fmt.Println(name)
-		entry.Data["file"] = file
-		entry.Data["func"] = path.Base(name)
-		entry.Data["line"] = lineno
 	}
 
 	entry.Logger.Out = logWriter

@@ -49,6 +49,13 @@ func newLogger(conf *Config) ILogger {
 	return NewLogrusLogger(func(l *LogrusLogger) {
 		l.Level, _ = logrus.ParseLevel(conf.LogLevel)
 
+		if conf.LogDetail {
+			hook, err := NewLineHook(conf)
+			if err == nil {
+				l.Hooks.Add(hook)
+			}
+		}
+
 		if conf.LogMode == "file" {
 			hook, err := NewFileHook(conf)
 			if err == nil {
