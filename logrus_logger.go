@@ -7,6 +7,7 @@ import (
 )
 
 var _ ILogger = (*LogrusLogger)(nil)
+
 // LogrusLogger file logger
 type LogrusLogger struct {
 	*logrus.Logger
@@ -14,7 +15,7 @@ type LogrusLogger struct {
 }
 
 // NewFileLogger providers a file logger based on logrus
-func NewLogrusLogger(option func(l *LogrusLogger)) (ILogger) {
+func NewLogrusLogger(option func(l *LogrusLogger)) ILogger {
 	l := &LogrusLogger{
 		Logger: &logrus.Logger{
 			Out: os.Stderr,
