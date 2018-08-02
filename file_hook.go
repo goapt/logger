@@ -13,7 +13,6 @@ import (
 // FileHook to send logs via syslog.
 type FileHook struct {
 	conf    *Config
-	logFile string
 	mu      *sync.RWMutex
 	cache   *sync.Map
 }
