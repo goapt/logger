@@ -14,6 +14,7 @@ func TestNewFileHook(t *testing.T) {
 			LogPath:     "/tmp/",
 			LogLevel:    "debug",
 			LogMaxFiles: 15,
+			LogDetail:   true,
 		})
 		if err == nil {
 			l.Hooks.Add(hook)
