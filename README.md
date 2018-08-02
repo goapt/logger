@@ -32,6 +32,7 @@ logger.Setting(func(c *logger.Config) {
     c.LogPath = "/tmp/logs/"
     c.LogSentryDSN = ""
     c.LogSentryType = ""
+    c.LogDetail = true
 })
 ```
 
@@ -48,4 +49,12 @@ log := logger.NewLogger(func(c *logger.Config) {
 })
 
 log.Debug("this is new log")
+```
+
+## Print filename and line no
+
+if `LogDetail` is true,the log data add filename and line no
+
+```
+{"file":"/Users/fifsky/wwwroot/go/library/src/github.com/fifsky/goblog/handler/index.go","func":"handler.IndexGet","level":"debug","line":16,"msg":"[test]","time":"2018-08-02 22:37:02"}
 ```
