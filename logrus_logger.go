@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"fmt"
 )
 
 var _ ILogger = (*LogrusLogger)(nil)
@@ -29,7 +30,7 @@ func NewLogrusLogger(option func(l *LogrusLogger)) ILogger {
 	return l
 }
 
-func (l *LogrusLogger) withFields(format string) ILogger {
+func (l *LogrusLogger) withFinger(format string) ILogger {
 	if l.Fingerprint {
 		return l.Logger.WithFields(logrus.Fields{
 			"fingerprint": []string{format},
@@ -40,41 +41,50 @@ func (l *LogrusLogger) withFields(format string) ILogger {
 }
 
 func (l *LogrusLogger) Debugf(format string, args ...interface{}) {
-	l.withFields(format).Debugf(format, args...)
+	l.withFinger(format).Debugf(format, args...)
 }
 
 func (l *LogrusLogger) Infof(format string, args ...interface{}) {
-	l.withFields(format).Infof(format, args...)
+	l.withFinger(format).Infof(format, args...)
 }
 
 func (l *LogrusLogger) Warnf(format string, args ...interface{}) {
-	l.withFields(format).Warnf(format, args...)
+	l.withFinger(format).Warnf(format, args...)
 }
 
 func (l *LogrusLogger) Errorf(format string, args ...interface{}) {
-	l.withFields(format).Errorf(format, args...)
+	l.withFinger(format).Errorf(format, args...)
 }
 
 func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
-	l.withFields(format).Fatalf(format, args...)
+	l.withFinger(format).Fatalf(format, args...)
 }
 
 func (l *LogrusLogger) Debug(args ...interface{}) {
-	l.Logger.Debug(args)
+	l.withFinger(argsFormat(args)).Debug(args...)
 }
 
 func (l *LogrusLogger) Info(args ...interface{}) {
-	l.Logger.Info(args)
+	l.withFinger(argsFormat(args)).Info(args...)
 }
 
 func (l *LogrusLogger) Warn(args ...interface{}) {
-	l.Logger.Warn(args)
+	l.withFinger(argsFormat(args)).Warn(args...)
 }
 
 func (l *LogrusLogger) Error(args ...interface{}) {
-	l.Logger.Error(args)
+	l.withFinger(argsFormat(args)).Error(args...)
 }
 
 func (l *LogrusLogger) Fatal(args ...interface{}) {
-	l.Logger.Fatal(args)
+	l.withFinger(argsFormat(args)).Fatal(args...)
+}
+
+func argsFormat(args ...interface{}) string {
+	format := ""
+	if len(args) > 0 {
+		format = fmt.Sprint(args[0])
+	}
+
+	return format
 }
