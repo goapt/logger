@@ -61,23 +61,23 @@ func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
 }
 
 func (l *LogrusLogger) Debug(args ...interface{}) {
-	l.withFinger(argsFormat(args)).Debug(args...)
+	l.withFinger(argsFormat(args...)).Debug(args...)
 }
 
 func (l *LogrusLogger) Info(args ...interface{}) {
-	l.withFinger(argsFormat(args)).Info(args...)
+	l.withFinger(argsFormat(args...)).Info(args...)
 }
 
 func (l *LogrusLogger) Warn(args ...interface{}) {
-	l.withFinger(argsFormat(args)).Warn(args...)
+	l.withFinger(argsFormat(args...)).Warn(args...)
 }
 
 func (l *LogrusLogger) Error(args ...interface{}) {
-	l.withFinger(argsFormat(args)).Error(args...)
+	l.withFinger(argsFormat(args...)).Error(args...)
 }
 
 func (l *LogrusLogger) Fatal(args ...interface{}) {
-	l.withFinger(argsFormat(args)).Fatal(args...)
+	l.withFinger(argsFormat(args...)).Fatal(args...)
 }
 
 func argsFormat(args ...interface{}) string {
