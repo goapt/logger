@@ -13,8 +13,8 @@ import (
 // FileHook to send logs via syslog.
 type FileHook struct {
 	conf  *Config
-	mu    *sync.RWMutex
-	cache *sync.Map
+	mu    sync.RWMutex
+	cache sync.Map
 }
 
 func NewFileHook(conf *Config) (*FileHook, error) {
@@ -28,8 +28,6 @@ func NewFileHook(conf *Config) (*FileHook, error) {
 
 	hook := &FileHook{
 		conf:  conf,
-		mu:    &sync.RWMutex{},
-		cache: &sync.Map{},
 	}
 	return hook, nil
 }

@@ -3,8 +3,8 @@ package logger
 import (
 	"os"
 
-	"github.com/sirupsen/logrus"
 	"fmt"
+	"github.com/sirupsen/logrus"
 )
 
 var _ ILogger = (*LogrusLogger)(nil)
