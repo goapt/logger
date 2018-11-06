@@ -27,8 +27,6 @@ func NewLogrusLogger(option func(l *LogrusLogger)) ILogger {
 		},
 	}
 	option(l)
-
-	l.SetReportCaller(true)
 	return l
 }
 
