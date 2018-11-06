@@ -108,6 +108,10 @@ func Fatalf(str string, args ...interface{}) {
 	std.Fatalf(str, args...)
 }
 
+func Tracef(str string, args ...interface{}) {
+	std.Tracef(str, args...)
+}
+
 func Debug(args ...interface{}) {
 	std.Debug(args...)
 }
@@ -126,4 +130,8 @@ func Error(args ...interface{}) {
 
 func Fatal(args ...interface{}) {
 	std.Fatal(args...)
+}
+
+func Trace(args ...interface{}) {
+	std.Trace(args...)
 }

@@ -53,3 +53,14 @@ func TestNewLogger(t *testing.T) {
 		"test": "zxc",
 	})
 }
+
+func TestTraceLog(t *testing.T)  {
+	log := NewLogger(func(c *Config) {
+		c.LogName = "test"
+		c.LogMode = "std"
+		c.LogPath = "/tmp/"
+		c.LogLevel = "trace"
+	})
+
+	log.Debug("sdfsdfsdf")
+}

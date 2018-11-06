@@ -27,6 +27,8 @@ func NewLogrusLogger(option func(l *LogrusLogger)) ILogger {
 		},
 	}
 	option(l)
+
+	l.SetReportCaller(true)
 	return l
 }
 
@@ -60,6 +62,10 @@ func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
 	l.withFinger(format).Fatalf(format, args...)
 }
 
+func (l *LogrusLogger) Tracef(format string, args ...interface{}) {
+	l.withFinger(format).Tracef(format, args...)
+}
+
 func (l *LogrusLogger) Debug(args ...interface{}) {
 	l.withFinger(argsFormat(args...)).Debug(args...)
 }
@@ -79,6 +85,11 @@ func (l *LogrusLogger) Error(args ...interface{}) {
 func (l *LogrusLogger) Fatal(args ...interface{}) {
 	l.withFinger(argsFormat(args...)).Fatal(args...)
 }
+
+func (l *LogrusLogger) Trace(args ...interface{}) {
+	l.withFinger(argsFormat(args...)).Trace(args...)
+}
+
 
 func argsFormat(args ...interface{}) string {
 	format := ""

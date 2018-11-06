@@ -7,9 +7,11 @@ type ILogger interface {
 	Infof(string, ...interface{})
 	Warnf(string, ...interface{})
 	Errorf(string, ...interface{})
+	Tracef(string, ...interface{})
 	Fatal(...interface{})
 	Debug(...interface{})
 	Info(...interface{})
 	Warn(...interface{})
 	Error(...interface{})
+	Trace(...interface{})
 }
