@@ -76,7 +76,6 @@ func newLogger(conf *Config) ILogger {
 				logrus.FatalLevel,
 				logrus.ErrorLevel,
 				logrus.WarnLevel,
-				logrus.InfoLevel,
 			})
 			hook.Timeout = 1 * time.Second
 			hook.StacktraceConfiguration.Enable = true

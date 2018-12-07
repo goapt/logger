@@ -27,25 +27,28 @@ func NewFileHook(conf *Config) (*FileHook, error) {
 	}
 
 	hook := &FileHook{
-		conf:  conf,
+		conf: conf,
 	}
 	return hook, nil
 }
 
 func (h *FileHook) Fire(entry *logrus.Entry) error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	if h.conf.LogMaxFiles > 0 {
-		delDate := time.Now().AddDate(0, 0, -h.conf.LogMaxFiles).Format("2006-01-02")
-		os.Remove(h.conf.LogPath + h.conf.LogName + "-" + delDate + ".log")
-	}
-
 	d := time.Now().Format("2006-01-02")
 	logFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+d+".log")
 
 	var logWriter *os.File
 	f, ok := h.cache.Load(logFile)
 	if !ok {
+		h.mu.Lock()
+		defer h.mu.Unlock()
+		//delete old log
+		if h.conf.LogMaxFiles > 0 {
+			delDate := time.Now().AddDate(0, 0, -h.conf.LogMaxFiles).Format("2006-01-02")
+			oldFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+delDate+".log")
+			h.cache.Delete(oldFile)
+			os.Remove(oldFile)
+		}
+
 		var err error
 		logWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 		if err != nil {
