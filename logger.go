@@ -87,6 +87,10 @@ func newLogger(conf *Config) ILogger {
 	})
 }
 
+func AddHook(hook logrus.Hook)  {
+	std.AddHook(hook)
+}
+
 func Debugf(str string, args ...interface{}) {
 	std.Debugf(str, args...)
 }

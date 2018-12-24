@@ -30,7 +30,7 @@ func NewLogrusLogger(option func(l *LogrusLogger)) ILogger {
 	return l
 }
 
-func (l *LogrusLogger) withFinger(format string) ILogger {
+func (l *LogrusLogger) withFinger(format string) IBaseLogger {
 	if l.Fingerprint {
 		return l.Logger.WithFields(logrus.Fields{
 			"fingerprint": []string{format},
@@ -38,6 +38,10 @@ func (l *LogrusLogger) withFinger(format string) ILogger {
 	}
 
 	return l.Logger
+}
+
+func (l *LogrusLogger) AddHook(hook logrus.Hook) {
+	l.Logger.AddHook(hook)
 }
 
 func (l *LogrusLogger) Debugf(format string, args ...interface{}) {
@@ -87,7 +91,6 @@ func (l *LogrusLogger) Fatal(args ...interface{}) {
 func (l *LogrusLogger) Trace(args ...interface{}) {
 	l.withFinger(argsFormat(args...)).Trace(args...)
 }
-
 
 func argsFormat(args ...interface{}) string {
 	format := ""
