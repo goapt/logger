@@ -7,6 +7,8 @@ github.com/evalphobia/logrus_sentry v0.4.6 h1:825MLGu+SW5H8hMXGeBI7TwX7vgJLd9hz0
 github.com/evalphobia/logrus_sentry v0.4.6/go.mod h1:pKcp+vriitUqu9KiWj/VRFbRfFNUwz95/UkgG8a6MNc=
 github.com/evalphobia/logrus_sentry v0.6.0 h1:GbLPEF7jrf5qhGF/lrRhfQdT3rBoD1/sJAqWfW6ywR4=
 github.com/evalphobia/logrus_sentry v0.6.0/go.mod h1:pKcp+vriitUqu9KiWj/VRFbRfFNUwz95/UkgG8a6MNc=
+github.com/evalphobia/logrus_sentry v0.8.0 h1:BcXJRqUsqJwmFBGflmPzFSdrQhRzfQkyb+42XLMyTuM=
+github.com/evalphobia/logrus_sentry v0.8.0/go.mod h1:pKcp+vriitUqu9KiWj/VRFbRfFNUwz95/UkgG8a6MNc=
 github.com/getsentry/raven-go v0.0.0-20180903072508-084a9de9eb03 h1:G/9fPivTr5EiyqE9OlW65iMRUxFXMGRHgZFGo50uG8Q=
 github.com/getsentry/raven-go v0.0.0-20180903072508-084a9de9eb03/go.mod h1:KungGk8q33+aIAZUIVWZDr2OfAEBsO49PX4NzFV5kcQ=
 github.com/getsentry/raven-go v0.1.0 h1:lc5jnN9D+q3panDpihwShgaOVvP6esoMEKbID2yhLoQ=
