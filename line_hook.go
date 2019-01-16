@@ -46,7 +46,7 @@ func getCaller() *runtime.Frame {
 	for f, again := frames.Next(); again; f, again = frames.Next() {
 		pkg := getPackageName(f.Function)
 		// If the caller isn't part of this package, we're done
-		if pkg != "github.com/verystar/logger" && pkg != "github.com/sirupsen/logrus" {
+		if !strings.HasSuffix(pkg, "github.com/verystar/logger") && !strings.HasSuffix(pkg, "github.com/sirupsen/logrus") {
 			return &f
 		}
 	}
