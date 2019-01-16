@@ -2,10 +2,11 @@ package logger
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 )
 
 // FileHook to send logs via syslog.

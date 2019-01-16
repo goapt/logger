@@ -1,11 +1,12 @@
 package logger
 
 import (
-	"github.com/sirupsen/logrus"
 	"path"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
