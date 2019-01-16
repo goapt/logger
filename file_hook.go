@@ -24,17 +24,18 @@ func NewFileHook(conf *Config) (*FileHook, error) {
 		}
 	}
 
+	if conf.LogRotate == nil {
+		conf.LogRotate = &LoggerRotate{}
+	}
+
 	hook := &FileHook{
 		conf: conf,
 	}
+
 	return hook, nil
 }
 
 func (h *FileHook) Fire(entry *logrus.Entry) error {
-	if h.conf.LogRotate == nil {
-		h.conf.LogRotate = &LoggerRotate{}
-	}
-
 	logFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+h.conf.LogRotate.Current()+".log")
 
 	var logWriter *os.File
