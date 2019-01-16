@@ -23,5 +23,6 @@ type IBaseLogger interface {
 type ILogger interface {
 	IBaseLogger
 	AddHook(hook logrus.Hook)
+	WithFields(map[string]interface{}) IBaseLogger
 }
 

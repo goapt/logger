@@ -1,10 +1,11 @@
 package logger
 
 import (
+	"io"
 	"time"
 
-	"github.com/evalphobia/logrus_sentry"
 	"github.com/sirupsen/logrus"
+	"github.com/verystar/logrus_sentry"
 )
 
 type Config struct {
@@ -16,6 +17,8 @@ type Config struct {
 	LogMaxFiles   int    `toml:"log_max_files" json:"log_max_files"`
 	LogSentryDSN  string `toml:"log_sentry_dsn" json:"log_sentry_dsn"`
 	LogSentryType string `toml:"log_sentry_type" json:"log_sentry_type"`
+	LogRotate     ILoggerRotate
+	LogWriter     io.Writer
 }
 
 var (
@@ -26,9 +29,10 @@ var (
 
 func init() {
 	defaultConfig = &Config{
-		LogName:  "app",
-		LogMode:  "std",
-		LogLevel: "debug",
+		LogName:   "app",
+		LogMode:   "std",
+		LogLevel:  "debug",
+		LogRotate: &LoggerRotate{},
 	}
 	std = newLogger(defaultConfig)
 }
@@ -65,6 +69,10 @@ func newLogger(conf *Config) ILogger {
 			}
 		}
 
+		if conf.LogMode == "custom" {
+			l.SetOutput(conf.LogWriter)
+		}
+
 		if conf.LogSentryDSN != "" {
 			l.Fingerprint = true
 			tags := map[string]string{
@@ -87,7 +95,7 @@ func newLogger(conf *Config) ILogger {
 	})
 }
 
-func AddHook(hook logrus.Hook)  {
+func AddHook(hook logrus.Hook) {
 	std.AddHook(hook)
 }
 
@@ -137,4 +145,8 @@ func Fatal(args ...interface{}) {
 
 func Trace(args ...interface{}) {
 	std.Trace(args...)
+}
+
+func WithFields(fields map[string]interface{}) IBaseLogger {
+	return std.WithFields(fields)
 }

@@ -40,6 +40,10 @@ func (l *LogrusLogger) withFinger(format string) IBaseLogger {
 	return l.Logger
 }
 
+func (l *LogrusLogger) WithFields(fields map[string]interface{}) IBaseLogger {
+	return l.Logger.WithFields(fields)
+}
+
 func (l *LogrusLogger) AddHook(hook logrus.Hook) {
 	l.Logger.AddHook(hook)
 }

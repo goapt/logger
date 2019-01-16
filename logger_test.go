@@ -1,12 +1,12 @@
 package logger
 
 import (
+	"os"
 	"testing"
 	"time"
 )
 
 func TestMain(m *testing.M) {
-	isTest = true
 	m.Run()
 }
 
@@ -54,7 +54,7 @@ func TestNewLogger(t *testing.T) {
 	})
 }
 
-func TestTraceLog(t *testing.T)  {
+func TestTraceLog(t *testing.T) {
 	log := NewLogger(func(c *Config) {
 		c.LogName = "test"
 		c.LogMode = "std"
@@ -63,4 +63,48 @@ func TestTraceLog(t *testing.T)  {
 	})
 
 	log.Debug("sdfsdfsdf")
+}
+
+func TestNewCustom(t *testing.T) {
+	log := NewLogger(func(c *Config) {
+		c.LogMode = "custom"
+		c.LogLevel = "trace"
+		c.LogName = "test"
+		c.LogDetail = true
+		c.LogWriter = os.Stderr
+	})
+
+	log.WithFields(map[string]interface{}{
+		"aaa":   123,
+		"bbb": "sadf",
+	}).Error("test custom logger", map[string]interface{}{
+		"id":   1,
+		"name": "test",
+	})
+
+	log.Error("test custom logger2", map[string]interface{}{
+		"id":   1,
+		"name": "test",
+	})
+
+	Setting(func(c *Config) {
+		c.LogMode = "custom"
+		c.LogLevel = "trace"
+		c.LogName = "test"
+		c.LogDetail = true
+		c.LogWriter = os.Stderr
+	})
+
+	WithFields(map[string]interface{}{
+		"aaa":   123,
+		"bbb": "sadf",
+	}).Error("test custom logger", map[string]interface{}{
+		"id":   1,
+		"name": "test",
+	})
+
+	Error("test custom logger2", map[string]interface{}{
+		"id":   1,
+		"name": "test",
+	})
 }

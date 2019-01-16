@@ -2,12 +2,10 @@ package logger
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"sync"
-	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // FileHook to send logs via syslog.
@@ -33,18 +31,22 @@ func NewFileHook(conf *Config) (*FileHook, error) {
 }
 
 func (h *FileHook) Fire(entry *logrus.Entry) error {
-	d := time.Now().Format("2006-01-02")
-	logFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+d+".log")
+	logFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+h.conf.LogRotate.Current()+".log")
 
 	var logWriter *os.File
-	f, ok := h.cache.Load(logFile)
-	if !ok {
+	if f, ok := h.cache.Load(logFile); !ok {
 		h.mu.Lock()
 		defer h.mu.Unlock()
-		//delete old log
+
+		//Close yesteday file handler
+		prevFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+h.conf.LogRotate.Prev(1)+".log")
+		if f, ok := h.cache.Load(prevFile); ok {
+			f.(*os.File).Close()
+		}
+
+		//Delete old log file
 		if h.conf.LogMaxFiles > 0 {
-			delDate := time.Now().AddDate(0, 0, -h.conf.LogMaxFiles).Format("2006-01-02")
-			oldFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+delDate+".log")
+			oldFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+h.conf.LogRotate.Prev(h.conf.LogMaxFiles)+".log")
 			h.cache.Delete(oldFile)
 			os.Remove(oldFile)
 		}
