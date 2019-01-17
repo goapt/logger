@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	LogName       string `toml:"log_name" json:"log_name"`
+	LogFormat     string `toml:"log_format" json:"log_format"`
 	LogPath       string `toml:"log_path" json:"log_path"`
 	LogMode       string `toml:"log_mode" json:"log_mode"`
 	LogLevel      string `toml:"log_level" json:"log_level"`
@@ -54,6 +55,12 @@ func NewLogger(options ...func(*Config)) ILogger {
 func newLogger(conf *Config) ILogger {
 	return NewLogrusLogger(func(l *LogrusLogger) {
 		l.Level, _ = logrus.ParseLevel(conf.LogLevel)
+
+		if conf.LogFormat == "text" {
+			l.SetFormatter(&logrus.TextFormatter{
+				TimestampFormat: "2006-01-02 15:04:05",
+			})
+		}
 
 		if conf.LogDetail {
 			hook, err := NewLineHook(conf)
