@@ -46,7 +46,7 @@ func (l *LogrusLogger) WithFields(fields map[string]interface{}) IBaseLogger {
 
 func (l *LogrusLogger) Data(v map[string]interface{}) IBaseLogger {
 	return l.Logger.WithFields(map[string]interface{}{
-		"data": jsonEncode(v),
+		"data": v,
 	})
 }
 

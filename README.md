@@ -69,5 +69,5 @@ logger.Data(map[string]interface{}{
 ```
 
 ```
-{"data":"{\"id\":1,\"name\":\"test\"}","level":"info","msg":"[CURL ERROR]123123","time":"2019-01-18 17:04:21"}
+{"data":{"id":1,"name":"test"},"level":"info","msg":"[CURL ERROR]123123","time":"2019-01-18 17:05:17"}
 ```
