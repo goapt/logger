@@ -58,3 +58,16 @@ if `LogDetail` is true,the log data add filename and line no
 ```
 {"file":"/Users/fifsky/wwwroot/go/library/src/github.com/fifsky/goblog/handler/index.go","func":"handler.IndexGet","level":"debug","line":16,"msg":"[test]","time":"2018-08-02 22:37:02"}
 ```
+
+## Log Data
+
+```
+logger.Data(map[string]interface{}{
+		"id":   1,
+		"name": "test",
+	}).Info("[CURL ERROR]", "123123")
+```
+
+```
+{"data":"{\"id\":1,\"name\":\"test\"}","level":"info","msg":"[CURL ERROR]123123","time":"2019-01-18 17:04:21"}
+```

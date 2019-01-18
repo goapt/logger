@@ -11,11 +11,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestInfo(t *testing.T) {
-	Info("[CURL ERROR]", "123123", map[string]string{
-		"Url":         "sdfsdfsdfsdf",
-		"RequestTime": "2018-15-15",
-		"ErrorInfo":   "sdfsdfs",
-	})
+	Data(map[string]interface{}{
+		"id":   1,
+		"name": "test",
+	}).Info("[CURL ERROR]", "123123")
 }
 
 func TestNewLogger(t *testing.T) {
@@ -75,7 +74,7 @@ func TestNewCustom(t *testing.T) {
 	})
 
 	log.WithFields(map[string]interface{}{
-		"aaa":   123,
+		"aaa": 123,
 		"bbb": "sadf",
 	}).Error("test custom logger", map[string]interface{}{
 		"id":   1,
@@ -96,7 +95,7 @@ func TestNewCustom(t *testing.T) {
 	})
 
 	WithFields(map[string]interface{}{
-		"aaa":   123,
+		"aaa": 123,
 		"bbb": "sadf",
 	}).Error("test custom logger", map[string]interface{}{
 		"id":   1,

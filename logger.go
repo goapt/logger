@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"encoding/json"
 	"io"
 	"time"
 
@@ -156,4 +157,15 @@ func Trace(args ...interface{}) {
 
 func WithFields(fields map[string]interface{}) IBaseLogger {
 	return std.WithFields(fields)
+}
+
+func Data(v map[string]interface{}) IBaseLogger {
+	return std.WithFields(map[string]interface{}{
+		"data": jsonEncode(v),
+	})
+}
+
+func jsonEncode(v interface{}) string {
+	str, _ := json.Marshal(v)
+	return string(str)
 }
