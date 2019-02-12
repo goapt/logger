@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"encoding/json"
 	"io"
 	"time"
 
@@ -159,7 +160,14 @@ func WithFields(fields map[string]interface{}) IBaseLogger {
 }
 
 func Data(v interface{}) IBaseLogger {
+	d, err := json.Marshal(v)
+	if err != nil {
+		return std.WithFields(map[string]interface{}{
+			"data": v,
+		})
+	}
+
 	return std.WithFields(map[string]interface{}{
-		"data": v,
+		"data": d,
 	})
 }
