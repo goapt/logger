@@ -26,7 +26,6 @@ func TestNewFileHook(t *testing.T) {
 	log.Info("hahahahahah")
 	log.Info("hahahahahah")
 	log.Info("hahahahahah")
-
 }
 
 func BenchmarkNewFileHook(b *testing.B) {
