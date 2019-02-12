@@ -168,6 +168,6 @@ func Data(v interface{}) IBaseLogger {
 	}
 
 	return std.WithFields(map[string]interface{}{
-		"data": d,
+		"data": string(d),
 	})
 }
