@@ -158,7 +158,7 @@ func WithFields(fields map[string]interface{}) IBaseLogger {
 	return std.WithFields(fields)
 }
 
-func Data(v map[string]interface{}) IBaseLogger {
+func Data(v interface{}) IBaseLogger {
 	return std.WithFields(map[string]interface{}{
 		"data": v,
 	})
