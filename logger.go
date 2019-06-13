@@ -5,8 +5,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/goapt/logrus_sentry"
 	"github.com/sirupsen/logrus"
-	"github.com/verystar/logrus_sentry"
 )
 
 type Config struct {

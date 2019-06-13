@@ -1,9 +1,9 @@
 # Logger
-<a href="https://travis-ci.org/verystar/logger"><img src="https://travis-ci.org/verystar/logger.svg" alt="Build Status"></a>
-<a href="https://codecov.io/gh/verystar/logger"><img src="https://codecov.io/gh/verystar/logger/branch/master/graph/badge.svg" alt="codecov"></a>
-<a href="https://goreportcard.com/report/github.com/verystar/logger"><img src="https://goreportcard.com/badge/github.com/verystar/logger" alt="Go Report Card
+<a href="https://travis-ci.org/goapt/logger"><img src="https://travis-ci.org/goapt/logger.svg" alt="Build Status"></a>
+<a href="https://codecov.io/gh/goapt/logger"><img src="https://codecov.io/gh/goapt/logger/branch/master/graph/badge.svg" alt="codecov"></a>
+<a href="https://goreportcard.com/report/github.com/goapt/logger"><img src="https://goreportcard.com/badge/github.com/goapt/logger" alt="Go Report Card
 "></a>
-<a href="https://godoc.org/github.com/verystar/logger"><img src="https://godoc.org/github.com/verystar/logger?status.svg" alt="GoDoc"></a>
+<a href="https://godoc.org/github.com/goapt/logger"><img src="https://godoc.org/github.com/goapt/logger?status.svg" alt="GoDoc"></a>
 <a href="https://opensource.org/licenses/mit-license.php" rel="nofollow"><img src="https://badges.frapsoft.com/os/mit/mit.svg?v=103"></a>
 </p>
 
@@ -15,7 +15,7 @@ Golang logger,Integrate logrus and sentry,support logroate
 default log out to os.Stderr
 
 ```go
-import "github.com/verystar/logger"
+import "github.com/goapt/logger"
 
 func main(){
     logger.Debug("debug printer %s","hehe")
