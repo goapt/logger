@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"encoding/json"
 	"io"
 	"time"
 
@@ -19,6 +18,7 @@ type Config struct {
 	LogMaxFiles   int    `toml:"log_max_files" json:"log_max_files"`
 	LogSentryDSN  string `toml:"log_sentry_dsn" json:"log_sentry_dsn"`
 	LogSentryType string `toml:"log_sentry_type" json:"log_sentry_type"`
+	LogSkip       int
 	LogRotate     ILoggerRotate
 	LogWriter     io.Writer
 }
@@ -93,10 +93,10 @@ func newLogger(conf *Config) ILogger {
 				logrus.ErrorLevel,
 				logrus.WarnLevel,
 			})
-			hook.Timeout = 1 * time.Second
-			hook.StacktraceConfiguration.Enable = true
 
 			if err == nil {
+				hook.Timeout = 1 * time.Second
+				hook.StacktraceConfiguration.Enable = true
 				l.Hooks.Add(hook)
 			}
 		}
@@ -155,19 +155,18 @@ func Trace(args ...interface{}) {
 	std.Trace(args...)
 }
 
-func WithFields(fields map[string]interface{}) IBaseLogger {
+func WithFields(fields map[string]interface{}) ILogger {
 	return std.WithFields(fields)
 }
 
-func Data(v interface{}) IBaseLogger {
-	d, err := json.Marshal(v)
-	if err != nil {
-		return std.WithFields(map[string]interface{}{
-			"data": v,
-		})
-	}
-
+func Data(v interface{}) ILogger {
 	return std.WithFields(map[string]interface{}{
-		"data": string(d),
+		"data": v,
+	})
+}
+
+func Skip(i int) ILogger {
+	return NewLogger(func(c *Config) {
+		c.LogSkip = i
 	})
 }

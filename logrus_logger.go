@@ -1,9 +1,9 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 
-	"fmt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,6 +13,7 @@ var _ ILogger = (*LogrusLogger)(nil)
 type LogrusLogger struct {
 	*logrus.Logger
 	Fingerprint bool
+	fields      map[string]interface{}
 }
 
 // NewFileLogger providers a file logger based on logrus
@@ -25,27 +26,32 @@ func NewLogrusLogger(option func(l *LogrusLogger)) ILogger {
 			},
 			Hooks: make(logrus.LevelHooks),
 		},
+		fields: make(map[string]interface{}),
 	}
 	option(l)
 	return l
 }
 
-func (l *LogrusLogger) withFinger(format string) IBaseLogger {
+func (l *LogrusLogger) withFinger(format string) ILogger {
 	if l.Fingerprint {
-		return l.Logger.WithFields(logrus.Fields{
+		return l.WithFields(map[string]interface{}{
 			"fingerprint": []string{format},
 		})
 	}
 
-	return l.Logger
+	return l
 }
 
-func (l *LogrusLogger) WithFields(fields map[string]interface{}) IBaseLogger {
-	return l.Logger.WithFields(fields)
+func (l *LogrusLogger) WithFields(fields map[string]interface{}) ILogger {
+	for k, v := range fields {
+		l.fields[k] = v
+	}
+
+	return l
 }
 
-func (l *LogrusLogger) Data(v interface{}) IBaseLogger {
-	return l.Logger.WithFields(map[string]interface{}{
+func (l *LogrusLogger) Data(v interface{}) ILogger {
+	return l.WithFields(map[string]interface{}{
 		"data": v,
 	})
 }
@@ -55,51 +61,63 @@ func (l *LogrusLogger) AddHook(hook logrus.Hook) {
 }
 
 func (l *LogrusLogger) Debugf(format string, args ...interface{}) {
-	l.withFinger(format).Debugf(format, args...)
+	l.withFinger(format)
+	l.Logger.WithFields(l.fields).Debugf(format, args...)
 }
 
 func (l *LogrusLogger) Infof(format string, args ...interface{}) {
-	l.withFinger(format).Infof(format, args...)
+	l.withFinger(format)
+	l.Logger.WithFields(l.fields).Infof(format, args...)
 }
 
 func (l *LogrusLogger) Warnf(format string, args ...interface{}) {
-	l.withFinger(format).Warnf(format, args...)
+	l.withFinger(format)
+	l.Logger.WithFields(l.fields).Warnf(format, args...)
 }
 
 func (l *LogrusLogger) Errorf(format string, args ...interface{}) {
-	l.withFinger(format).Errorf(format, args...)
+	l.withFinger(format)
+	l.Logger.WithFields(l.fields).Errorf(format, args...)
 }
 
 func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
-	l.withFinger(format).Fatalf(format, args...)
+	l.withFinger(format)
+	l.Logger.WithFields(l.fields).Fatalf(format, args...)
 }
 
 func (l *LogrusLogger) Tracef(format string, args ...interface{}) {
-	l.withFinger(format).Tracef(format, args...)
+	l.withFinger(format)
+	l.Logger.WithFields(l.fields).Tracef(format, args...)
 }
 
 func (l *LogrusLogger) Debug(args ...interface{}) {
-	l.withFinger(argsFormat(args...)).Debug(args...)
+	l.withFinger(argsFormat(args...))
+	l.Logger.WithFields(l.fields).Debug(args...)
 }
 
 func (l *LogrusLogger) Info(args ...interface{}) {
-	l.withFinger(argsFormat(args...)).Info(args...)
+	l.withFinger(argsFormat(args...))
+	l.Logger.WithFields(l.fields).Info(args...)
 }
 
 func (l *LogrusLogger) Warn(args ...interface{}) {
-	l.withFinger(argsFormat(args...)).Warn(args...)
+	l.withFinger(argsFormat(args...))
+	l.Logger.WithFields(l.fields).Warn(args...)
 }
 
 func (l *LogrusLogger) Error(args ...interface{}) {
-	l.withFinger(argsFormat(args...)).Error(args...)
+	l.withFinger(argsFormat(args...))
+	l.Logger.WithFields(l.fields).Error(args...)
 }
 
 func (l *LogrusLogger) Fatal(args ...interface{}) {
-	l.withFinger(argsFormat(args...)).Fatal(args...)
+	l.withFinger(argsFormat(args...))
+	l.Logger.WithFields(l.fields).Fatal(args...)
 }
 
 func (l *LogrusLogger) Trace(args ...interface{}) {
-	l.withFinger(argsFormat(args...)).Trace(args...)
+	l.withFinger(argsFormat(args...))
+	l.Logger.WithFields(l.fields).Trace(args...)
 }
 
 func argsFormat(args ...interface{}) string {

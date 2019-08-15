@@ -3,7 +3,7 @@ package logger
 import "github.com/sirupsen/logrus"
 
 // ILogger is the logger interface
-type IBaseLogger interface {
+type ILogger interface {
 	Fatalf(string, ...interface{})
 	Debugf(string, ...interface{})
 	Infof(string, ...interface{})
@@ -16,14 +16,7 @@ type IBaseLogger interface {
 	Warn(...interface{})
 	Error(...interface{})
 	Trace(...interface{})
-}
-
-
-// ILogger is the logger interface
-type ILogger interface {
-	IBaseLogger
 	AddHook(hook logrus.Hook)
-	WithFields(map[string]interface{}) IBaseLogger
-	Data(interface{}) IBaseLogger
+	WithFields(map[string]interface{}) ILogger
+	Data(interface{}) ILogger
 }
-

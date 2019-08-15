@@ -37,7 +37,7 @@ func getPackageName(f string) string {
 }
 
 // getCaller retrieves the name of the first non-logrus calling function
-func getCaller() *runtime.Frame {
+func getCaller(skip int) *runtime.Frame {
 	// Restrict the lookback frames to avoid runaway lookups
 	pcs := make([]uintptr, maximumCallerDepth)
 	depth := runtime.Callers(minimumCallerDepth, pcs)
@@ -47,7 +47,11 @@ func getCaller() *runtime.Frame {
 		pkg := getPackageName(f.Function)
 		// If the caller isn't part of this package, we're done
 		if !strings.HasSuffix(pkg, "github.com/goapt/logger") && !strings.HasSuffix(pkg, "github.com/sirupsen/logrus") {
-			return &f
+			if skip == 0 {
+				return &f
+			} else {
+				skip--
+			}
 		}
 	}
 
@@ -67,7 +71,7 @@ func (h *LineHook) Fire(entry *logrus.Entry) error {
 	if h.conf.LogDetail {
 		h.mu.Lock()
 		defer h.mu.Unlock()
-		caller := getCaller()
+		caller := getCaller(h.conf.LogSkip)
 
 		if caller == nil {
 			return nil
