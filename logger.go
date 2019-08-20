@@ -160,9 +160,7 @@ func WithFields(fields map[string]interface{}) ILogger {
 }
 
 func Data(v interface{}) ILogger {
-	return std.WithFields(map[string]interface{}{
-		"data": v,
-	})
+	return std.Data(v)
 }
 
 func Skip(i int) ILogger {
