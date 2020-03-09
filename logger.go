@@ -2,9 +2,8 @@ package logger
 
 import (
 	"io"
-	"time"
 
-	"github.com/goapt/logrus_sentry"
+	"github.com/goapt/logrus-sentry-hook"
 	"github.com/sirupsen/logrus"
 )
 
@@ -87,16 +86,19 @@ func newLogger(conf *Config) ILogger {
 				"type": conf.LogSentryType,
 			}
 
-			hook, err := logrus_sentry.NewWithTagsSentryHook(conf.LogSentryDSN, tags, []logrus.Level{
+			hook, err := sentry.NewHook(sentry.Options{
+				Dsn:              conf.LogSentryDSN,
+				AttachStacktrace: true,
+			},
 				logrus.PanicLevel,
 				logrus.FatalLevel,
 				logrus.ErrorLevel,
 				logrus.WarnLevel,
-			})
+				logrus.InfoLevel,
+			)
 
 			if err == nil {
-				hook.Timeout = 1 * time.Second
-				hook.StacktraceConfiguration.Enable = true
+				hook.SetTags(tags)
 				l.Hooks.Add(hook)
 			}
 		}
