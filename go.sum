@@ -37,6 +37,8 @@ github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm
 github.com/go-martini/martini v0.0.0-20170121215854-22fa46961aab/go.mod h1:/P9AEU963A2AYjv4d1V5eVL1CQbEJq6aCNHDDjibzu8=
 github.com/goapt/logrus-sentry-hook v0.0.3 h1:pw8BpQcd2oU9pf8OzydcMrhA5tF7RP631IHygPuIpjs=
 github.com/goapt/logrus-sentry-hook v0.0.3/go.mod h1:oE80Viy0+seSsYcUghb6Jh33anm3ZEZvTk9yfDvUrH4=
+github.com/goapt/logrus-sentry-hook v0.0.4 h1:xnqrJy8qnvbAENwAmBr9Qy+hp4FwnHtp48kN6/BtSUo=
+github.com/goapt/logrus-sentry-hook v0.0.4/go.mod h1:oE80Viy0+seSsYcUghb6Jh33anm3ZEZvTk9yfDvUrH4=
 github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee/go.mod h1:L0fX3K22YWvt/FAX9NnzrNzcI4wNYi9Yku4O0LKYflo=
 github.com/gobwas/pool v0.2.0/go.mod h1:q8bcK0KcYlCgd9e7WYLm9LpyS+YeLd8JVDW6WezmKEw=
 github.com/gobwas/ws v1.0.2/go.mod h1:szmBTxLgaFppYjEmNtny/v3w89xOydFnnZMcgRRu/EM=
