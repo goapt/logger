@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 )
@@ -13,7 +14,8 @@ var _ ILogger = (*LogrusLogger)(nil)
 type LogrusLogger struct {
 	*logrus.Logger
 	Fingerprint bool
-	fields      map[string]interface{}
+	fields      logrus.Fields
+	lock        sync.Mutex
 }
 
 // NewFileLogger providers a file logger based on logrus
@@ -34,8 +36,12 @@ func NewLogrusLogger(option func(l *LogrusLogger)) ILogger {
 
 func (l *LogrusLogger) withFinger(format string) IBaseLogger {
 	if l.Fingerprint {
+		l.lock.Lock()
 		l.fields["fingerprint"] = []string{format}
+		l.lock.Unlock()
+	}
 
+	if len(l.fields) > 0 {
 		return l.Logger.WithFields(l.fields)
 	}
 
@@ -51,7 +57,7 @@ func (l *LogrusLogger) WithFields(fields map[string]interface{}) ILogger {
 }
 
 func (l *LogrusLogger) Data(v interface{}) ILogger {
-	return l.WithFields(map[string]interface{}{
+	return l.WithFields(logrus.Fields{
 		"data": v,
 	})
 }
