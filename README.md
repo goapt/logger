@@ -1,5 +1,6 @@
 # Logger
-<a href="https://travis-ci.org/goapt/logger"><img src="https://travis-ci.org/goapt/logger.svg" alt="Build Status"></a>
+<p>
+<a href="https://github.com/goapt/logger/actions"><img src="https://github.com/goapt/logger/workflows/build/badge.svg" alt="Build Status"></a>
 <a href="https://codecov.io/gh/goapt/logger"><img src="https://codecov.io/gh/goapt/logger/branch/master/graph/badge.svg" alt="codecov"></a>
 <a href="https://goreportcard.com/report/github.com/goapt/logger"><img src="https://goreportcard.com/badge/github.com/goapt/logger" alt="Go Report Card
 "></a>
