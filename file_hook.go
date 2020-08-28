@@ -44,17 +44,17 @@ func (h *FileHook) Fire(entry *logrus.Entry) error {
 		h.mu.Lock()
 		defer h.mu.Unlock()
 
-		//Close yesteday file handler
+		// Close yesteday file handler
 		prevFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+h.conf.LogRotate.Prev(1)+".log")
 		if f, ok := h.cache.Load(prevFile); ok {
-			f.(*os.File).Close()
+			_ = f.(*os.File).Close()
 		}
 
-		//Delete old log file
+		// Delete old log file
 		if h.conf.LogMaxFiles > 0 {
 			oldFile := filepath.Join(h.conf.LogPath, h.conf.LogName+"-"+h.conf.LogRotate.Prev(h.conf.LogMaxFiles)+".log")
 			h.cache.Delete(oldFile)
-			os.Remove(oldFile)
+			_ = os.Remove(oldFile)
 		}
 
 		var err error

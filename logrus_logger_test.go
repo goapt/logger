@@ -2,12 +2,13 @@ package logger
 
 import (
 	"errors"
-	"github.com/sirupsen/logrus"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TestNewLogrusLogger(t *testing.T) {
-	log := NewLogrusLogger(func(l *LogrusLogger) {
+	log := NewLogrusLogger(defaultConfig, func(l *LogrusLogger) {
 		l.Level = logrus.DebugLevel
 	})
 	log.Debugf("test %s", "cccc")

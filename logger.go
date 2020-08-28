@@ -44,7 +44,7 @@ func Setting(option func(*Config)) {
 }
 
 func NewLogger(options ...func(*Config)) ILogger {
-	//copy default config
+	// copy default config
 	conf := *defaultConfig
 	for _, option := range options {
 		option(&conf)
@@ -53,20 +53,13 @@ func NewLogger(options ...func(*Config)) ILogger {
 }
 
 func newLogger(conf *Config) ILogger {
-	return NewLogrusLogger(func(l *LogrusLogger) {
+	return NewLogrusLogger(conf, func(l *LogrusLogger) {
 		l.Level, _ = logrus.ParseLevel(conf.LogLevel)
 
 		if conf.LogFormat == "text" {
 			l.SetFormatter(&logrus.TextFormatter{
 				TimestampFormat: "2006-01-02 15:04:05",
 			})
-		}
-
-		if conf.LogDetail {
-			hook, err := NewLineHook(conf)
-			if err == nil {
-				l.Hooks.Add(hook)
-			}
 		}
 
 		if conf.LogMode == "file" {
@@ -81,11 +74,6 @@ func newLogger(conf *Config) ILogger {
 		}
 
 		if conf.LogSentryDSN != "" {
-			l.Fingerprint = true
-			tags := map[string]string{
-				"type": conf.LogSentryType,
-			}
-
 			hook, err := sentry.NewHook(sentry.Options{
 				Dsn:              conf.LogSentryDSN,
 				AttachStacktrace: true,
@@ -98,7 +86,9 @@ func newLogger(conf *Config) ILogger {
 			)
 
 			if err == nil {
-				hook.SetTags(tags)
+				hook.SetTags(map[string]string{
+					"type": conf.LogSentryType,
+				})
 				l.Hooks.Add(hook)
 			}
 		}
