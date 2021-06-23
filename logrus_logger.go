@@ -21,7 +21,7 @@ type LogrusLogger struct {
 	lock   sync.Mutex
 }
 
-// NewFileLogger providers a file logger based on logrus
+// NewLogrusLogger providers a file logger based on logrus
 func NewLogrusLogger(conf *Config, option func(l *LogrusLogger)) ILogger {
 	l := &LogrusLogger{
 		Logger: &logrus.Logger{
@@ -38,10 +38,13 @@ func NewLogrusLogger(conf *Config, option func(l *LogrusLogger)) ILogger {
 	return l
 }
 
-func (l *LogrusLogger) withFinger(format string) IBaseLogger {
+func (l *LogrusLogger) withFinger(format string) *logrus.Entry {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	l.fields["fingerprint"] = []string{format}
+
+	if l.conf.LogSentryDSN != "" {
+		l.fields["fingerprint"] = []string{format}
+	}
 
 	if l.conf.LogDetail {
 		if caller := getCaller(l.conf.LogSkip); caller != nil {
@@ -63,9 +66,22 @@ func (l *LogrusLogger) WithFields(fields map[string]interface{}) ILogger {
 }
 
 func (l *LogrusLogger) Data(v interface{}) ILogger {
-	return l.WithFields(logrus.Fields{
-		"data": v,
-	})
+	var data logrus.Fields
+
+	switch m := v.(type) {
+	case map[string]interface{}:
+		data = m
+	case error:
+		data = logrus.Fields{
+			logrus.ErrorKey: v,
+		}
+	default:
+		data = logrus.Fields{
+			"data": v,
+		}
+	}
+
+	return l.WithFields(data)
 }
 
 func (l *LogrusLogger) AddHook(hook logrus.Hook) {
@@ -81,7 +97,7 @@ func (l *LogrusLogger) Infof(format string, args ...interface{}) {
 }
 
 func (l *LogrusLogger) Warnf(format string, args ...interface{}) {
-	l.Logger.WithFields(l.fields).Warnf(format, args...)
+	l.withFinger(format).Warnf(format, args...)
 }
 
 func (l *LogrusLogger) Errorf(format string, args ...interface{}) {
