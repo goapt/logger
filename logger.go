@@ -8,15 +8,15 @@ import (
 )
 
 type Config struct {
-	LogName       string `toml:"log_name" json:"log_name"`
-	LogFormat     string `toml:"log_format" json:"log_format"`
-	LogPath       string `toml:"log_path" json:"log_path"`
-	LogMode       string `toml:"log_mode" json:"log_mode"`
-	LogLevel      string `toml:"log_level" json:"log_level"`
-	LogDetail     bool   `toml:"log_detail" json:"log_detail"`
-	LogMaxFiles   int    `toml:"log_max_files" json:"log_max_files"`
-	LogSentryDSN  string `toml:"log_sentry_dsn" json:"log_sentry_dsn"`
-	LogSentryType string `toml:"log_sentry_type" json:"log_sentry_type"`
+	LogName       string `toml:"log_name" json:"log_name" yml:"log_name"`
+	LogFormat     string `toml:"log_format" json:"log_format" yml:"log_format"`
+	LogPath       string `toml:"log_path" json:"log_path" yml:"log_path"`
+	LogMode       string `toml:"log_mode" json:"log_mode" yml:"log_mode"`
+	LogLevel      string `toml:"log_level" json:"log_level" yml:"log_level"`
+	LogDetail     bool   `toml:"log_detail" json:"log_detail" yml:"log_detail"`
+	LogMaxFiles   int    `toml:"log_max_files" json:"log_max_files" yml:"log_max_files"`
+	LogSentryDSN  string `toml:"log_sentry_dsn" json:"log_sentry_dsn" yml:"log_sentry_dsn"`
+	LogSentryType string `toml:"log_sentry_type" json:"log_sentry_type" yml:"log_sentry_type"`
 	LogSkip       int
 	LogRotate     ILoggerRotate
 	LogWriter     io.Writer
