@@ -147,11 +147,11 @@ func Trace(args ...interface{}) {
 	std.Trace(args...)
 }
 
-func WithFields(fields map[string]interface{}) ILogger {
+func WithFields(fields map[string]interface{}) *logrus.Entry {
 	return std.WithFields(fields)
 }
 
-func Data(v interface{}) ILogger {
+func Data(v interface{}) *logrus.Entry {
 	return std.Data(v)
 }
 
