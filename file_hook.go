@@ -26,7 +26,7 @@ func NewFileHook(conf *Config) (*FileHook, error) {
 	}
 
 	if conf.LogRotate == nil {
-		conf.LogRotate = &LoggerRotate{}
+		conf.LogRotate = NewLoggerRotate()
 	}
 
 	hook := &FileHook{
@@ -59,6 +59,7 @@ func (h *FileHook) Fire(entry *logrus.Entry) error {
 
 		var err error
 		logWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+
 		if err != nil {
 			return fmt.Errorf("can't open file: path = %v, err = %v", logFile, err)
 		}
@@ -67,8 +68,14 @@ func (h *FileHook) Fire(entry *logrus.Entry) error {
 		logWriter = f.(*os.File)
 	}
 
-	entry.Logger.Out = logWriter
-	return nil
+	line, err := entry.Bytes()
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
+		return err
+	}
+
+	_, err = logWriter.Write(line)
+	return err
 }
 
 func (h *FileHook) Levels() []logrus.Level {

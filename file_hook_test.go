@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -18,6 +19,7 @@ func TestNewFileHook(t *testing.T) {
 		})
 		if err == nil {
 			l.Hooks.Add(hook)
+			l.SetOutput(ioutil.Discard)
 		}
 	})
 
@@ -25,7 +27,7 @@ func TestNewFileHook(t *testing.T) {
 	log.Info("hahahahahah")
 	log.Info("hahahahahah")
 	log.Info("hahahahahah")
-	log.Info("hahahahahah")
+	log.WithFields(map[string]interface{}{"id": 1}).Info("hahahahahah")
 }
 
 func BenchmarkNewFileHook(b *testing.B) {

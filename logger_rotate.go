@@ -7,12 +7,18 @@ type ILoggerRotate interface {
 	Prev(n int) string
 }
 
-type LoggerRotate struct{}
+type LoggerRotate struct {
+	currTime time.Time
+}
+
+func NewLoggerRotate() *LoggerRotate {
+	return &LoggerRotate{currTime: time.Now()}
+}
 
 func (r *LoggerRotate) Current() string {
-	return time.Now().Format("2006-01-02")
+	return r.currTime.Format("2006-01-02")
 }
 
 func (r *LoggerRotate) Prev(n int) string {
-	return time.Now().AddDate(0, 0, -n).Format("2006-01-02")
+	return r.currTime.AddDate(0, 0, -n).Format("2006-01-02")
 }

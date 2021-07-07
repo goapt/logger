@@ -2,6 +2,7 @@ package logger
 
 import (
 	"io"
+	"io/ioutil"
 
 	"github.com/goapt/logrus-sentry-hook"
 	"github.com/sirupsen/logrus"
@@ -66,6 +67,7 @@ func newLogger(conf *Config) ILogger {
 			hook, err := NewFileHook(conf)
 			if err == nil {
 				l.Hooks.Add(hook)
+				l.SetOutput(ioutil.Discard)
 			}
 		}
 
