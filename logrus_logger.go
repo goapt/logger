@@ -16,9 +16,7 @@ var _ ILogger = (*LogrusLogger)(nil)
 // LogrusLogger file logger
 type LogrusLogger struct {
 	*logrus.Logger
-	conf   *Config
-	fields logrus.Fields
-	lock   sync.Mutex
+	conf *Config
 }
 
 // NewLogrusLogger providers a file logger based on logrus
@@ -31,33 +29,30 @@ func NewLogrusLogger(conf *Config, option func(l *LogrusLogger)) ILogger {
 			},
 			Hooks: make(logrus.LevelHooks),
 		},
-		conf:   conf,
-		fields: make(map[string]interface{}),
+		conf: conf,
 	}
 	option(l)
 	return l
 }
 
 func (l *LogrusLogger) withFinger(format string) *logrus.Entry {
-	l.lock.Lock()
-	defer l.lock.Unlock()
-
+	fields := map[string]interface{}{}
 	if l.conf.LogSentryDSN != "" {
-		l.fields["fingerprint"] = []string{format}
+		fields["fingerprint"] = []string{format}
 	}
-
-	if l.conf.LogDetail {
-		if caller := getCaller(l.conf.LogSkip); caller != nil {
-			l.fields["file"] = caller.File
-			l.fields["func"] = path.Base(caller.Function)
-			l.fields["line"] = caller.Line
-		}
-	}
-
-	return l.Logger.WithFields(l.fields)
+	return l.WithFields(fields)
 }
 
 func (l *LogrusLogger) WithFields(fields map[string]interface{}) *logrus.Entry {
+
+	if l.conf.LogDetail {
+		if caller := getCaller(l.conf.LogSkip); caller != nil {
+			fields["file"] = caller.File
+			fields["func"] = path.Base(caller.Function)
+			fields["line"] = caller.Line
+		}
+	}
+
 	return l.Logger.WithFields(fields)
 }
 
