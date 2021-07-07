@@ -57,15 +57,11 @@ func (l *LogrusLogger) withFinger(format string) *logrus.Entry {
 	return l.Logger.WithFields(l.fields)
 }
 
-func (l *LogrusLogger) WithFields(fields map[string]interface{}) ILogger {
-	return &LogrusLogger{
-		Logger: l.Logger,
-		conf:   l.conf,
-		fields: fields,
-	}
+func (l *LogrusLogger) WithFields(fields map[string]interface{}) *logrus.Entry {
+	return l.Logger.WithFields(fields)
 }
 
-func (l *LogrusLogger) Data(v interface{}) ILogger {
+func (l *LogrusLogger) Data(v interface{}) *logrus.Entry {
 	var data logrus.Fields
 
 	switch m := v.(type) {

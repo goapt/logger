@@ -17,6 +17,6 @@ type ILogger interface {
 	Error(...interface{})
 	Trace(...interface{})
 	AddHook(hook logrus.Hook)
-	WithFields(map[string]interface{}) ILogger
-	Data(interface{}) ILogger
+	WithFields(map[string]interface{}) *logrus.Entry
+	Data(interface{}) *logrus.Entry
 }
