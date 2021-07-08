@@ -154,9 +154,3 @@ func WithFields(fields map[string]interface{}) *logrus.Entry {
 func Data(v interface{}) *logrus.Entry {
 	return DefaultLogger.Data(v)
 }
-
-func Skip(i int) ILogger {
-	return NewLogger(func(c *Config) {
-		c.LogSkip = i
-	})
-}
