@@ -38,8 +38,9 @@ func init() {
 }
 
 func Setting(option func(c *Config)) {
-	option(defaultConfig)
-	DefaultLogger = newLogger(defaultConfig)
+	conf := *defaultConfig
+	option(&conf)
+	DefaultLogger = newLogger(&conf)
 }
 
 func NewLogger(options ...func(c *Config)) ILogger {
