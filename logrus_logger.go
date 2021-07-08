@@ -138,7 +138,7 @@ func argsFormat(args ...interface{}) string {
 
 const (
 	maximumCallerDepth int = 25
-	knownLogrusFrames  int = 4
+	knownLogrusFrames  int = 3
 )
 
 var (
