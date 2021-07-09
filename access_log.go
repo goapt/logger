@@ -2,6 +2,8 @@ package logger
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -30,7 +32,6 @@ type AccessEntry struct {
 	request        *http.Request
 	body           []byte
 	Response       ResponseWriter
-	LogInfo        map[string]interface{}
 	URIFilter      []string // 忽略的URI
 	isSkip         bool
 	RequestFilter  func(body []byte, r *http.Request) []byte // 过滤request_body敏感信息
@@ -70,6 +71,10 @@ func (l *AccessEntry) Get() map[string]interface{} {
 		l.body = l.RequestFilter(l.body, l.request)
 	}
 
+	if l.StartTime.IsZero() {
+		l.StartTime = time.Now()
+	}
+
 	// 部分业务返回数据需要脱敏
 	var respBody []byte
 	var httpStatus int
@@ -82,6 +87,12 @@ func (l *AccessEntry) Get() map[string]interface{} {
 		}
 
 		responseHeader = jsonEncode(queryToMap(l.Response.Header()))
+	}
+
+	// 从context读取info附加信息
+	info := l.request.Context().Value("__info__")
+	if info == nil {
+		info = make(map[string]interface{})
 	}
 
 	endTime := time.Now()
@@ -104,19 +115,19 @@ func (l *AccessEntry) Get() map[string]interface{} {
 		"server_name":      l.request.Host,
 		"remote_addr":      remoteAddr(l.request),
 		"proto":            l.request.Proto,
-		"info":             "",
+		"info":             jsonEncode(info),
 	}
 
-	if l.LogInfo != nil {
-		logData["info"] = jsonEncode(l.LogInfo)
-	}
-
-	if strings.HasPrefix(l.request.Header.Get("Content-Type"), MIMEPOSTForm) {
+	contentType := l.request.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, MIMEPOSTForm) {
 		requestData, err := parseRequest(l.body, l.request)
 		if err == nil {
 			logData["request_body_raw"] = logData["request_body"]
 			logData["request_body"] = jsonEncode(requestData)
 		}
+	} else if strings.HasPrefix(contentType, "multipart/") {
+		// 如果是上传的接口则request_body只记录md5值
+		logData["request_body"] = md5string(l.body)
 	}
 
 	// 超长处理
@@ -248,4 +259,10 @@ func filterFlags(content string) string {
 
 func contentType(r *http.Request) string {
 	return filterFlags(r.Header.Get("Content-Type"))
+}
+
+func md5string(text []byte) string {
+	algorithm := md5.New()
+	algorithm.Write(text)
+	return hex.EncodeToString(algorithm.Sum(nil))
 }
