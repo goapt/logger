@@ -4,3 +4,6 @@
 .idea
 .DS_Store
 /vendor
+cover.out
+cover_total.out
+cover.html

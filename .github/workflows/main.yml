@@ -27,7 +27,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Test
+      - name: Test and generate coverage
         env:
           TZ: Asia/Shanghai
         run: |
@@ -36,5 +36,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          flags: ${{ matrix.os }},go-${{ matrix.go }},${{ matrix.test-tags }}
+          files: ./cover.out
+          flags: os-${{ runner.os }},go-${{ matrix.go-version }}
+          fail_ci_if_error: true
+          verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
