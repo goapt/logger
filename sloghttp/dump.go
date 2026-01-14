@@ -200,7 +200,7 @@ func (r *response) Header() http.Header {
 }
 
 func (r *response) Status() int {
-	return r.Response.StatusCode
+	return r.StatusCode
 }
 
 func (r *response) BytesWritten() int {
