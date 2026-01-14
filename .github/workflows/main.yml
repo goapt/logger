@@ -11,9 +11,7 @@ jobs:
         go-version: [1.23, 1.24, 1.25]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
-
+      - uses: actions/checkout@v4
       - name: Set up Golang ${{ matrix.go-version }}
         uses: actions/setup-go@v5
         with:
@@ -38,3 +36,4 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: ${{ matrix.os }},go-${{ matrix.go }},${{ matrix.test-tags }}
+          token: ${{ secrets.CODECOV_TOKEN }}
