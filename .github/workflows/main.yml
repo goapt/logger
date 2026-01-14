@@ -16,6 +16,15 @@ jobs:
           go-version: ${{ matrix.go-version }}
         id: go
 
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ${{ matrix.go-build }}
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Test
         env:
           TZ: Asia/Shanghai
