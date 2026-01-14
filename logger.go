@@ -3,155 +3,96 @@ package logger
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
+	"sync/atomic"
 
-	"github.com/goapt/logrus-sentry-hook"
-	"github.com/sirupsen/logrus"
+	"github.com/goapt/logger/rolling"
+)
+
+type Mode string
+
+const (
+	ModeFile   Mode = "file"
+	ModeStd    Mode = "std"
+	ModeCustom Mode = "custom"
 )
 
 type Config struct {
-	LogName       string `toml:"log_name" json:"log_name"`
-	LogFormat     string `toml:"log_format" json:"log_format"`
-	LogPath       string `toml:"log_path" json:"log_path"`
-	LogMode       string `toml:"log_mode" json:"log_mode"`
-	LogLevel      string `toml:"log_level" json:"log_level"`
-	LogDetail     bool   `toml:"log_detail" json:"log_detail"`
-	LogMaxFiles   int    `toml:"log_max_files" json:"log_max_files"`
-	LogSentryDSN  string `toml:"log_sentry_dsn" json:"log_sentry_dsn"`
-	LogSentryType string `toml:"log_sentry_type" json:"log_sentry_type"`
-	LogSkip       int
-	LogWriter     io.Writer
+	Mode     Mode       `json:"mode" yaml:"mode"`           // default  std
+	Level    slog.Level `json:"level" yaml:"level"`         // default info
+	FileName string     `json:"filename" yaml:"filename"`   // only used for file mode
+	MaxFiles int        `json:"max_files" yaml:"max_files"` // default keep the last 3 files
+	MaxSize  int64      `json:"max_size" yaml:"max_size"`   // default 200MB
+	Detail   bool       `json:"detail" yaml:"detail"`       // add file path and line number
+	Writer   io.Writer  `json:"-" yaml:"-"`                 // only used for custom mode
 }
 
-var (
-	DefaultLogger ILogger
-	defaultConfig *Config
-)
+func New(conf *Config) *slog.Logger {
+	if conf.Mode == "" {
+		conf.Mode = ModeStd
+	}
+	return slog.New(newHandler(conf))
+}
+
+var defaultLogger atomic.Pointer[slog.Logger]
 
 func init() {
-	defaultConfig = &Config{
-		LogName:  "app",
-		LogMode:  "std",
-		LogLevel: "debug",
+	defaultLogger.Store(New(&Config{}))
+}
+
+// Default returns the standard logger used by the package-level output functions.
+func Default() *slog.Logger { return defaultLogger.Load() }
+
+func SetDefault(logger *slog.Logger) { defaultLogger.Store(logger) }
+
+func newRoller(conf *Config) *rolling.Roller {
+	if conf.MaxFiles == 0 {
+		conf.MaxFiles = 3
 	}
-	DefaultLogger = newLogger(defaultConfig)
-}
 
-func Setting(option func(c *Config)) {
-	conf := *defaultConfig
-	option(&conf)
-	DefaultLogger = newLogger(&conf)
-}
-
-func NewLogger(options ...func(c *Config)) ILogger {
-	// clone default config
-	conf := *defaultConfig
-	for _, option := range options {
-		option(&conf)
+	if conf.FileName == "" {
+		conf.FileName = "app"
 	}
-	return newLogger(&conf)
+
+	if conf.MaxSize == 0 {
+		conf.MaxSize = 1024 * 1024 * 200
+	}
+
+	roller, err := rolling.NewRoller(conf.FileName, conf.MaxSize, rolling.WithMaxBackups(conf.MaxFiles), rolling.WithMaxAge(3))
+	if err != nil {
+		panic(fmt.Sprintf("new file writer error %s", err))
+	}
+	return roller
 }
 
-func newLogger(conf *Config) ILogger {
-	return NewLogrusLogger(conf, func(l *LogrusLogger) {
-		l.Level, _ = logrus.ParseLevel(conf.LogLevel)
+func newHandler(conf *Config) slog.Handler {
+	isStdout := false
+	var w io.Writer
+	switch conf.Mode {
+	case ModeFile:
+		w = newRoller(conf)
+	case ModeCustom:
+		w = conf.Writer
+	default:
+		w = os.Stdout
+		isStdout = true
+	}
 
-		if conf.LogFormat == "text" {
-			l.SetFormatter(&logrus.TextFormatter{
-				TimestampFormat: "2006-01-02 15:04:05",
-			})
-		}
+	if os.Getenv("DEBUG_LOG") == "true" && !isStdout {
+		w = io.MultiWriter(w, os.Stdout)
+	}
 
-		if conf.LogMode == "file" {
-			if writer, err := NewFileWriter(conf); err == nil {
-				l.SetOutput(writer)
-			} else {
-				_, _ = fmt.Fprintf(os.Stderr, "new file writer error %s", err)
+	opts := &slog.HandlerOptions{
+		AddSource: conf.Detail,
+		Level:     conf.Level,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Value.Kind() == slog.KindTime {
+				return slog.String(a.Key, a.Value.Time().Format("2006-01-02 15:04:05.000"))
 			}
-		}
+			return a
+		},
+	}
 
-		if conf.LogMode == "custom" {
-			l.SetOutput(conf.LogWriter)
-		}
-
-		if conf.LogSentryDSN != "" {
-			hook, err := sentry.NewHook(sentry.Options{
-				Dsn:              conf.LogSentryDSN,
-				AttachStacktrace: true,
-			},
-				logrus.PanicLevel,
-				logrus.FatalLevel,
-				logrus.ErrorLevel,
-				logrus.WarnLevel,
-				logrus.InfoLevel,
-			)
-
-			if err == nil {
-				hook.SetTags(map[string]string{
-					"type": conf.LogSentryType,
-				})
-				l.Hooks.Add(hook)
-			}
-		}
-	})
-}
-
-func AddHook(hook logrus.Hook) {
-	DefaultLogger.AddHook(hook)
-}
-
-func Debugf(str string, args ...interface{}) {
-	DefaultLogger.Debugf(str, args...)
-}
-
-func Infof(str string, args ...interface{}) {
-	DefaultLogger.Infof(str, args...)
-}
-
-func Warnf(str string, args ...interface{}) {
-	DefaultLogger.Warnf(str, args...)
-}
-
-func Errorf(str string, args ...interface{}) {
-	DefaultLogger.Errorf(str, args...)
-}
-
-func Fatalf(str string, args ...interface{}) {
-	DefaultLogger.Fatalf(str, args...)
-}
-
-func Tracef(str string, args ...interface{}) {
-	DefaultLogger.Tracef(str, args...)
-}
-
-func Debug(args ...interface{}) {
-	DefaultLogger.Debug(args...)
-}
-
-func Info(args ...interface{}) {
-	DefaultLogger.Info(args...)
-}
-
-func Warn(args ...interface{}) {
-	DefaultLogger.Warn(args...)
-}
-
-func Error(args ...interface{}) {
-	DefaultLogger.Error(args...)
-}
-
-func Fatal(args ...interface{}) {
-	DefaultLogger.Fatal(args...)
-}
-
-func Trace(args ...interface{}) {
-	DefaultLogger.Trace(args...)
-}
-
-func WithFields(fields map[string]interface{}) *logrus.Entry {
-	return DefaultLogger.WithFields(fields)
-}
-
-func Data(v interface{}) *logrus.Entry {
-	return DefaultLogger.Data(v)
+	return slog.NewJSONHandler(w, opts)
 }

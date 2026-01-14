@@ -3,15 +3,6 @@ GOFMT ?= gofmt "-s"
 GOFILES := $(shell find . -name "*.go" -type f -not -path "./vendor/*")
 VETPACKAGES ?= $(shell $(GO) list ./... | grep -v /vendor/ | grep -v /examples/)
 
-.PHONY: build
-build: fmt-check generate
-	$(GO) build -o app
-
-.PHONY: generate
-generate:
-	$(GO) get github.com/google/wire/cmd/wire
-	$(GO) generate
-
 .PHONY: test
 test:
 	$(GO) test -short -v -coverprofile=cover.out ./...
@@ -37,15 +28,3 @@ fmt-check:
 
 vet:
 	$(GO) vet $(VETPACKAGES)
-
-.PHONY: deploy
-deploy:
-	skaffold run -n pay --tail
-
-.PHONY: envdrone
-envdrone:
-	@drone orgsecret update template env_conf @.env
-
-.PHONY: mysql-test
-mysql-test:
-	@docker-compose up -d mysql
