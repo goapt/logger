@@ -9,42 +9,34 @@ import (
 
 type Filter func(w WrapResponse, r *http.Request) bool
 
-// Accept Basic
+// Basic
 func Accept(filter Filter) Filter { return filter }
 func Ignore(filter Filter) Filter {
 	return func(w WrapResponse, r *http.Request) bool { return !filter(w, r) }
 }
 
-// AcceptMethod Method
+// Method
 func AcceptMethod(methods ...string) Filter {
+	for i := range methods {
+		methods[i] = strings.ToLower(methods[i])
+	}
+
 	return func(w WrapResponse, r *http.Request) bool {
-		reqMethod := strings.ToLower(r.Method)
-
-		for _, method := range methods {
-			if strings.ToLower(method) == reqMethod {
-				return true
-			}
-		}
-
-		return false
+		return slices.Contains(methods, strings.ToLower(r.Method))
 	}
 }
 
 func IgnoreMethod(methods ...string) Filter {
+	for i := range methods {
+		methods[i] = strings.ToLower(methods[i])
+	}
+
 	return func(w WrapResponse, r *http.Request) bool {
-		reqMethod := strings.ToLower(r.Method)
-
-		for _, method := range methods {
-			if strings.ToLower(method) == reqMethod {
-				return false
-			}
-		}
-
-		return true
+		return !slices.Contains(methods, strings.ToLower(r.Method))
 	}
 }
 
-// AcceptStatus Status
+// Status
 func AcceptStatus(statuses ...int) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
 		return slices.Contains(statuses, w.Status())
@@ -97,7 +89,7 @@ func IgnoreStatusLessThanOrEqual(status int) Filter {
 	return AcceptStatusGreaterThan(status)
 }
 
-// AcceptPath Path
+// Path
 func AcceptPath(urls ...string) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
 		return slices.Contains(urls, r.URL.Path)
@@ -158,10 +150,10 @@ func IgnorePathPrefix(prefixs ...string) Filter {
 	}
 }
 
-func AcceptPathSuffix(prefixs ...string) Filter {
+func AcceptPathSuffix(suffixs ...string) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
-		for _, prefix := range prefixs {
-			if strings.HasPrefix(r.URL.Path, prefix) {
+		for _, suffix := range suffixs {
+			if strings.HasSuffix(r.URL.Path, suffix) {
 				return true
 			}
 		}
@@ -185,7 +177,7 @@ func IgnorePathSuffix(suffixs ...string) Filter {
 func AcceptPathMatch(regs ...regexp.Regexp) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
 		for _, reg := range regs {
-			if reg.Match([]byte(r.URL.Path)) {
+			if reg.MatchString(r.URL.Path) {
 				return true
 			}
 		}
@@ -197,7 +189,7 @@ func AcceptPathMatch(regs ...regexp.Regexp) Filter {
 func IgnorePathMatch(regs ...regexp.Regexp) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
 		for _, reg := range regs {
-			if reg.Match([]byte(r.URL.Path)) {
+			if reg.MatchString(r.URL.Path) {
 				return false
 			}
 		}
@@ -206,7 +198,7 @@ func IgnorePathMatch(regs ...regexp.Regexp) Filter {
 	}
 }
 
-// AcceptHost Host
+// Host
 func AcceptHost(hosts ...string) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
 		return slices.Contains(hosts, r.URL.Host)
@@ -267,10 +259,10 @@ func IgnoreHostPrefix(prefixs ...string) Filter {
 	}
 }
 
-func AcceptHostSuffix(prefixs ...string) Filter {
+func AcceptHostSuffix(suffixs ...string) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
-		for _, prefix := range prefixs {
-			if strings.HasPrefix(r.URL.Host, prefix) {
+		for _, suffix := range suffixs {
+			if strings.HasSuffix(r.URL.Host, suffix) {
 				return true
 			}
 		}
@@ -294,7 +286,7 @@ func IgnoreHostSuffix(suffixs ...string) Filter {
 func AcceptHostMatch(regs ...regexp.Regexp) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
 		for _, reg := range regs {
-			if reg.Match([]byte(r.URL.Host)) {
+			if reg.MatchString(r.URL.Host) {
 				return true
 			}
 		}
@@ -306,7 +298,7 @@ func AcceptHostMatch(regs ...regexp.Regexp) Filter {
 func IgnoreHostMatch(regs ...regexp.Regexp) Filter {
 	return func(w WrapResponse, r *http.Request) bool {
 		for _, reg := range regs {
-			if reg.Match([]byte(r.URL.Host)) {
+			if reg.MatchString(r.URL.Host) {
 				return false
 			}
 		}

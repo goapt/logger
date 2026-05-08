@@ -3,20 +3,20 @@ package sloghttp
 import (
 	"context"
 	"log/slog"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type customAttributesCtxKeyType struct{}
-type requestIDCtxKeyType struct{}
 
 var customAttributesCtxKey = customAttributesCtxKeyType{}
-var requestIDCtxKey = requestIDCtxKeyType{}
 
 var (
 	TraceIDKey   = "trace_id"
@@ -43,35 +43,24 @@ var (
 )
 
 type Config struct {
-	DefaultLevel     slog.Level
-	ClientErrorLevel slog.Level
-	ServerErrorLevel slog.Level
+	Level slog.Level
 
 	WithUserAgent      bool
-	WithRequestID      bool
 	WithRequestBody    bool
 	WithRequestHeader  bool
 	WithResponseBody   bool
 	WithResponseHeader bool
-	WithSpanID         bool
-	WithTraceID        bool
 
 	Filters []Filter
 }
 
 var DefaultConfig = Config{
-	DefaultLevel:     slog.LevelInfo,
-	ClientErrorLevel: slog.LevelWarn,
-	ServerErrorLevel: slog.LevelError,
-
-	WithUserAgent:      false,
-	WithRequestID:      true,
-	WithRequestBody:    false,
-	WithRequestHeader:  false,
-	WithResponseBody:   false,
-	WithResponseHeader: false,
-	WithSpanID:         false,
-	WithTraceID:        false,
+	Level:              slog.LevelInfo,
+	WithUserAgent:      true,
+	WithRequestBody:    true,
+	WithRequestHeader:  true,
+	WithResponseBody:   true,
+	WithResponseHeader: true,
 
 	Filters: []Filter{},
 }
@@ -89,39 +78,38 @@ func log(logger *slog.Logger, config Config, r *http.Request, wr WrapResponse, b
 	end := time.Now()
 	latency := end.Sub(start)
 	userAgent := r.UserAgent()
-	ip := r.RemoteAddr
+	ip := extractClientIP(r)
 	referer := r.Referer()
 
-	var baseAttributes []slog.Attr
+	var baseAttributes = []slog.Attr{
+		slog.String("host", host),
+		slog.String("path", r.URL.Path),
+		slog.String("method", method),
+		slog.String("ip", ip),
+		slog.Float64("request_duration", latency.Seconds()),
+		slog.Int("http_status", status),
+	}
 
 	requestAttributes := []slog.Attr{
 		slog.Time("time", start.UTC()),
-		slog.String("method", method),
-		slog.String("host", host),
-		slog.String("path", r.URL.Path),
 		slog.String("query", r.URL.RawQuery),
-		slog.String("ip", ip),
 		slog.String("referer", referer),
 	}
 
 	responseAttributes := []slog.Attr{
 		slog.Time("time", end.UTC()),
-		slog.Duration("latency", latency),
-		slog.Int("status", status),
 	}
 
 	if err != nil {
-		responseAttributes = append(responseAttributes, slog.Any("http_error", err))
+		baseAttributes = append(baseAttributes, slog.Any("http_error", err))
 	}
 
-	if config.WithRequestID {
-		reqID := GetRequestIDFromContext(r.Context())
-		if reqID != "" {
-			baseAttributes = append(baseAttributes, slog.String(RequestIDKey, reqID))
-		}
+	reqID := GetRequestID(r)
+	if reqID != "" {
+		baseAttributes = append(baseAttributes, slog.String(RequestIDKey, reqID))
 	}
 
-	baseAttributes = append(baseAttributes, extractTraceSpanID(r.Context(), config.WithTraceID, config.WithSpanID)...)
+	baseAttributes = append(baseAttributes, extractTraceSpanID(r.Context())...)
 
 	if br != nil {
 		requestAttributes = append(requestAttributes, slog.Int("length", br.bytes))
@@ -189,29 +177,46 @@ func log(logger *slog.Logger, config Config, r *http.Request, wr WrapResponse, b
 		}
 	}
 
-	level := config.DefaultLevel
-	if status >= http.StatusInternalServerError {
-		level = config.ServerErrorLevel
-	} else if status >= http.StatusBadRequest {
-		level = config.ClientErrorLevel
+	level := config.Level
+	logger.LogAttrs(r.Context(), level, strconv.Itoa(status)+": "+http.StatusText(status), attributes...)
+}
+
+func extractClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		firstIP := strings.TrimSpace(strings.Split(xff, ",")[0])
+		if firstIP != "" {
+			return firstIP
+		}
 	}
 
-	logger.LogAttrs(r.Context(), level, strconv.Itoa(status)+": "+http.StatusText(status), attributes...)
+	if xRealIP := strings.TrimSpace(r.Header.Get("X-Real-IP")); xRealIP != "" {
+		return xRealIP
+	}
+
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil && host != "" {
+		return host
+	}
+
+	return r.RemoteAddr
+}
+
+func ensureRequestID(r *http.Request) *http.Request {
+	requestID := r.Header.Get(RequestIDHeaderKey)
+	if requestID == "" {
+		requestID = uuid.NewString()
+		r.Header.Set(RequestIDHeaderKey, requestID)
+	}
+
+	return r
 }
 
 // GetRequestID returns the request identifier.
 func GetRequestID(r *http.Request) string {
-	return GetRequestIDFromContext(r.Context())
-}
-
-// GetRequestIDFromContext returns the request identifier from the context.
-func GetRequestIDFromContext(ctx context.Context) string {
-	requestID := ctx.Value(requestIDCtxKey)
-	if id, ok := requestID.(string); ok {
-		return id
+	if r == nil {
+		return ""
 	}
-
-	return ""
+	return r.Header.Get(RequestIDHeaderKey)
 }
 
 // NewContextAttributes creates a new context with custom attributes.
@@ -237,11 +242,7 @@ func AddContextAttributes(ctx context.Context, attrs ...slog.Attr) {
 	}
 }
 
-func extractTraceSpanID(ctx context.Context, withTraceID bool, withSpanID bool) []slog.Attr {
-	if !withTraceID && !withSpanID {
-		return []slog.Attr{}
-	}
-
+func extractTraceSpanID(ctx context.Context) []slog.Attr {
 	span := trace.SpanFromContext(ctx)
 	if !span.IsRecording() {
 		return []slog.Attr{}
@@ -250,12 +251,13 @@ func extractTraceSpanID(ctx context.Context, withTraceID bool, withSpanID bool) 
 	var attrs []slog.Attr
 	spanCtx := span.SpanContext()
 
-	if withTraceID && spanCtx.HasTraceID() {
+	// 只要 span 处于 recording 状态，就记录 trace_id / span_id。
+	if spanCtx.HasTraceID() {
 		traceID := trace.SpanFromContext(ctx).SpanContext().TraceID().String()
 		attrs = append(attrs, slog.String(TraceIDKey, traceID))
 	}
 
-	if withSpanID && spanCtx.HasSpanID() {
+	if spanCtx.HasSpanID() {
 		spanID := spanCtx.SpanID().String()
 		attrs = append(attrs, slog.String(SpanIDKey, spanID))
 	}

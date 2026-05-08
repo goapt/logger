@@ -28,7 +28,6 @@ func TestNewRoundTripper_RequestIDAndLogging(t *testing.T) {
 	logger := slog.New(h)
 
 	cfg := DefaultConfig
-	cfg.WithRequestID = true
 	cfg.WithRequestBody = true
 	cfg.WithResponseBody = true
 
@@ -101,12 +100,8 @@ func TestRoundTripper_Error(t *testing.T) {
 	}
 	require.NotEmpty(t, top.Attrs)
 
-	resGroup, ok := findAttr(top.Attrs, "response")
-	require.True(t, ok)
-
-	// t.Logf("Response Group Attrs: %+v", resGroup.Value.Group())
-
-	errAttr, ok := findAttr(resGroup.Value.Group(), "http_error")
+	// http_error 在顶层属性中记录，不在 response 分组下。
+	errAttr, ok := findAttr(top.Attrs, "http_error")
 	require.True(t, ok)
 	require.Equal(t, io.ErrUnexpectedEOF, errAttr.Value.Any())
 }

@@ -1,12 +1,9 @@
 package sloghttp
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type RoundTripper struct {
@@ -18,14 +15,7 @@ type RoundTripper struct {
 func (rt *RoundTripper) RoundTrip(r *http.Request) (res *http.Response, err error) {
 	start := time.Now()
 
-	requestID := r.Header.Get(RequestIDHeaderKey)
-	if rt.config.WithRequestID {
-		if requestID == "" {
-			requestID = uuid.New().String()
-			r.Header.Set(RequestIDHeaderKey, requestID)
-		}
-		r = r.WithContext(context.WithValue(r.Context(), requestIDCtxKey, requestID))
-	}
+	r = ensureRequestID(r)
 
 	// dump request body
 	var br *bodyReader

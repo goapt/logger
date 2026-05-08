@@ -85,13 +85,11 @@ func main() {
 
     // Configure HTTP logging middleware (enable fields as needed)
     cfg := sloghttp.DefaultConfig
-    cfg.WithRequestID = true       // auto generate/propagate X-Request-Id
-    cfg.WithRequestBody = false    // capture request body (off by default; truncated)
-    cfg.WithResponseBody = false   // capture response body (off by default; truncated)
+    cfg.Level = slog.LevelInfo     // log level for HTTP logs
+    cfg.WithRequestBody = false    // capture request body (on by default; truncated)
+    cfg.WithResponseBody = false   // capture response body (on by default; truncated)
     cfg.WithRequestHeader = false  // include request headers (sensitive headers redacted)
     cfg.WithResponseHeader = false // include response headers (sensitive headers redacted)
-    cfg.WithTraceID = false        // extract TraceID from Context (requires OTel)
-    cfg.WithSpanID = false         // extract SpanID from Context (requires OTel)
 
     // Optional: filter routes/methods/status codes you don’t want to log
     // cfg.Filters = []sloghttp.Filter{
@@ -125,6 +123,7 @@ func main() {
 package main
 
 import (
+    "context"
     "log/slog"
     "net/http"
     "strings"
@@ -140,7 +139,7 @@ func main() {
     }))
 
     cfg := sloghttp.DefaultConfig
-    cfg.WithRequestID = true     // propagate/generate X-Request-Id for correlation
+    cfg.Level = slog.LevelInfo   // log level for HTTP logs
     cfg.WithRequestBody = true   // capture client request body
     cfg.WithResponseBody = true  // capture client response body
 
@@ -170,20 +169,15 @@ sloghttp.RequestBodyMaxSize = 128 * 1024
 sloghttp.ResponseBodyMaxSize = 128 * 1024
 ```
 
-- OpenTelemetry integration: if Trace/Span are in Context, enable WithTraceID/WithSpanID to include them in logs.
-
-```go
-cfg := sloghttp.DefaultConfig
-cfg.WithTraceID = true
-cfg.WithSpanID = true
-```
+- OpenTelemetry integration: when `span.IsRecording()` is true, `trace_id` and `span_id` are recorded automatically.
 
 ## Config Fields
 
-- DefaultLevel / ClientErrorLevel / ServerErrorLevel: control log level mapping
-- WithUserAgent / WithRequestID / WithRequestBody / WithRequestHeader: request switches
+- Level: control log level
+- WithUserAgent / WithRequestBody / WithRequestHeader: request switches
 - WithResponseBody / WithResponseHeader: response switches
-- WithTraceID / WithSpanID: extract Trace/Span from Context
+- request_id: always generated/propagated via `X-Request-Id` header
+- trace_id/span_id: auto extracted when `span.IsRecording()` is true
 - Filters: plug Accept*/Ignore* filters (method, path, status, host, etc.)
 
 Filter example:

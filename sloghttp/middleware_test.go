@@ -16,7 +16,6 @@ func TestNewMiddleware_RequestID_Logging_CustomAttr(t *testing.T) {
 	logger := slog.New(h)
 
 	cfg := DefaultConfig
-	cfg.WithRequestID = true
 	cfg.WithRequestBody = true
 	cfg.WithResponseBody = true
 
@@ -34,6 +33,7 @@ func TestNewMiddleware_RequestID_Logging_CustomAttr(t *testing.T) {
 	handler := mw(next)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "http://example.com/path", io.NopCloser(bytes.NewBufferString("req-body")))
+	req.Header.Set("X-Forwarded-For", "203.0.113.10, 198.51.100.2")
 
 	handler.ServeHTTP(rec, req)
 
@@ -66,4 +66,9 @@ func TestNewMiddleware_RequestID_Logging_CustomAttr(t *testing.T) {
 	foo, ok := findAttr(top.Attrs, "foo")
 	require.True(t, ok)
 	require.Equal(t, "bar", foo.Value.String())
+
+	// 业务代码已将客户端地址记录在 ip 字段。
+	clientIP, ok := findAttr(top.Attrs, "ip")
+	require.True(t, ok)
+	require.Equal(t, "203.0.113.10", clientIP.Value.String())
 }

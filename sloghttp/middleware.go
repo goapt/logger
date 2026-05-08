@@ -1,12 +1,9 @@
 package sloghttp
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // NewMiddleware returns a `func(http.Handler) http.Handler` (middleware) that logs requests using slog.
@@ -15,14 +12,7 @@ func NewMiddleware(logger *slog.Logger, config Config) func(http.Handler) http.H
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 
-			requestID := r.Header.Get(RequestIDHeaderKey)
-			if config.WithRequestID {
-				if requestID == "" {
-					requestID = uuid.New().String()
-					r.Header.Set(RequestIDHeaderKey, requestID)
-				}
-				r = r.WithContext(context.WithValue(r.Context(), requestIDCtxKey, requestID))
-			}
+			r = ensureRequestID(r)
 
 			// dump request body
 			var br *bodyReader
