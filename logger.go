@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -95,4 +96,44 @@ func newHandler(conf *Config) slog.Handler {
 	}
 
 	return slog.NewJSONHandler(w, opts)
+}
+
+// Debug logs at [slog.LevelDebug] using the default logger.
+func Debug(msg string, args ...any) {
+	Default().Debug(msg, args...)
+}
+
+// DebugContext logs at [slog.LevelDebug] using the default logger with the given context.
+func DebugContext(ctx context.Context, msg string, args ...any) {
+	Default().DebugContext(ctx, msg, args...)
+}
+
+// Info logs at [slog.LevelInfo] using the default logger.
+func Info(msg string, args ...any) {
+	Default().Info(msg, args...)
+}
+
+// InfoContext logs at [slog.LevelInfo] using the default logger with the given context.
+func InfoContext(ctx context.Context, msg string, args ...any) {
+	Default().InfoContext(ctx, msg, args...)
+}
+
+// Warn logs at [slog.LevelWarn] using the default logger.
+func Warn(msg string, args ...any) {
+	Default().Warn(msg, args...)
+}
+
+// WarnContext logs at [slog.LevelWarn] using the default logger with the given context.
+func WarnContext(ctx context.Context, msg string, args ...any) {
+	Default().WarnContext(ctx, msg, args...)
+}
+
+// Error logs at [slog.LevelError] using the default logger.
+func Error(msg string, args ...any) {
+	Default().Error(msg, args...)
+}
+
+// ErrorContext logs at [slog.LevelError] using the default logger with the given context.
+func ErrorContext(ctx context.Context, msg string, args ...any) {
+	Default().ErrorContext(ctx, msg, args...)
 }
