@@ -9,53 +9,135 @@
 <a href="https://opensource.org/licenses/mit-license.php" rel="nofollow"><img src="https://badges.frapsoft.com/os/mit/mit.svg?v=103"></a>
 </p>
 
-Golang logger,use log/slog, support logroate
+Golang logger, use `log/slog`, support multi-handler and log rotate.
 
-## Default logger
-
-default log out to os.Stderr
+## Quick Start
 
 ```go
-import "github.com/goapt/logger"
+import (
+    "log/slog"
+    "os"
 
-func main(){
-    logger.New(&logger.Config{
-        Mode: logger.ModeStd,
-        Level: slog.LevelInfo,
-    })
+    "github.com/goapt/logger"
+)
+
+func main() {
+    // Default logger: JSON to stdout at Info level
+    logger.Info("hello", slog.String("key", "value"))
 }
 ```
 
-## Setting default logger
+## Create Logger
 
+`New` accepts one or more `slog.Handler` and broadcasts log records to all of them.
+
+```go
+// Simple — stdout only (default level: Info)
+l := logger.New()
+
+// Single handler with custom level
+l := logger.New(logger.NewJSONHandler(os.Stdout, logger.WithLevel(slog.LevelDebug)))
+
+// Multiple handlers with independent levels
+l := logger.New(
+    logger.NewJSONHandler(os.Stdout, logger.WithLevel(slog.LevelDebug)),          // debug → stdout
+    logger.NewJSONHandler(logger.NewFileWriter("app.log"), logger.WithLevel(slog.LevelInfo)), // info+ → file
+)
+
+l.Debug("debug msg") // stdout only
+l.Info("info msg")   // stdout + file
+l.Error("error msg") // stdout + file
 ```
-logger.SetDefault(logger.New(&logger.Config{
-    Mode: logger.ModeFile,
-    Level: slog.LevelInfo,
-    FileName: "app.log",
-    Detail: true,
-}))
+
+## NewJSONHandler
+
+Creates a JSON handler writing to any `io.Writer`.
+
+```go
+logger.NewJSONHandler(os.Stdout)                                              // default: Info level
+logger.NewJSONHandler(os.Stdout, logger.WithLevel(slog.LevelDebug))           // custom level
+logger.NewJSONHandler(os.Stdout, logger.WithSource())                         // add file:line
+logger.NewJSONHandler(os.Stdout, logger.WithLevel(slog.LevelDebug), logger.WithSource())
 ```
 
-## Usage logger
+### HandlerOption
 
+| Option                | Description                                   |
+| --------------------- | --------------------------------------------- |
+| `WithLevel(level)`    | Minimum log level (default: `slog.LevelInfo`) |
+| `WithSource()`        | Include source file path and line number      |
+| `WithReplaceAttr(fn)` | Custom attribute replacement function         |
+
+## NewFileWriter
+
+Creates a rotating file writer (implements `io.WriteCloser`).
+
+```go
+w := logger.NewFileWriter("app.log")
+defer w.Close()
+
+// With options
+w := logger.NewFileWriter("app.log",
+    logger.WithMaxSize(100 * 1024 * 1024), // 100 MB per file (default: 200 MB)
+    logger.WithMaxFiles(5),                 // keep 5 backups (default: 3)
+    logger.WithMaxAge(7),                   // retain 7 days (default: 3)
+)
 ```
-// global logger
-logger.Default().Info("this is new log",slog.String("key","value"))
 
-// or
+### FileOption
+
+| Option               | Description                                     |
+| -------------------- | ----------------------------------------------- |
+| `WithMaxSize(bytes)` | Max file size before rotation (default: 200 MB) |
+| `WithMaxFiles(n)`    | Max number of backup files (default: 3)         |
+| `WithMaxAge(days)`   | Max days to retain backups (default: 3)         |
+
+## Setting Default Logger
+
+```go
+logger.SetDefault(logger.New(
+    logger.NewJSONHandler(os.Stdout, logger.WithLevel(slog.LevelDebug)),
+    logger.NewJSONHandler(logger.NewFileWriter("app.log"), logger.WithLevel(slog.LevelInfo), logger.WithSource()),
+))
+```
+
+## Usage
+
+```go
+// Package-level convenience functions (use Default logger)
+logger.Info("this is a log", slog.String("key", "value"))
+logger.Debug("debug message")
+logger.Error("something went wrong", slog.String("error", err.Error()))
+
+// Pass logger to functions
 func Foo(log *slog.Logger) {
-    log.Info("this is new log",slog.String("key","value"))
+    log.Info("this is new log", slog.String("key", "value"))
 }
 Foo(logger.Default())
 ```
 
-## Print filename and line no
+## Output Format
 
-if `Detail` is true,the log data add filename and line no
+JSON output with formatted timestamps:
 
+```json
+{
+  "time": "2025-05-28 10:30:00.123",
+  "level": "INFO",
+  "msg": "hello",
+  "key": "value"
+}
 ```
-{"file":"/Users/fifsky/wwwroot/go/library/src/github.com/fifsky/goblog/handler/index.go","func":"handler.IndexGet","level":"debug","line":16,"msg":"[test]","time":"2018-08-02 22:37:02"}
+
+With `WithSource()`:
+
+```json
+{
+  "time": "2025-05-28 10:30:00.123",
+  "level": "DEBUG",
+  "msg": "[test]",
+  "source": { "function": "main.foo", "file": "/app/main.go", "line": 42 }
+}
 ```
 
 # Record the logs of the HTTP Handler and HTTP Client
@@ -77,11 +159,7 @@ import (
 
 func main() {
     // Initialize default logger (JSON to stdout)
-    logger.SetDefault(logger.New(&logger.Config{
-        Mode:   logger.ModeStd,
-        Level:  slog.LevelInfo,
-        Detail: false,
-    }))
+    logger.SetDefault(logger.New(logger.NewJSONHandler(os.Stdout)))
 
     // Configure HTTP logging middleware (enable fields as needed)
     cfg := sloghttp.DefaultConfig
@@ -133,10 +211,7 @@ import (
 )
 
 func main() {
-    logger.SetDefault(logger.New(&logger.Config{
-        Mode:  logger.ModeStd,
-        Level: slog.LevelInfo,
-    }))
+    logger.SetDefault(logger.New(logger.NewJSONHandler(os.Stdout)))
 
     cfg := sloghttp.DefaultConfig
     cfg.Level = slog.LevelInfo   // log level for HTTP logs
