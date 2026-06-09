@@ -140,9 +140,9 @@ With `WithSource()`:
 }
 ```
 
-# Record the logs of the HTTP Handler and HTTP Client
+# Record HTTP Handler and HTTP Client Logs
 
-Use sloghttp to record HTTP server and client request/response data as structured logs for observability and search. Supports request ID correlation, request/response body capture with truncation, sensitive header redaction, flexible filters, and OpenTelemetry Trace/Span extraction. Code forked from https://github.com/samber/slog-http, with additional support for HTTP client logging.
+Use `github.com/goapt/logger/sloghttp` to record HTTP server and client request/response data as structured logs for observability and search. `httpx` no longer imports this package directly; callers can compose it with `httpx.WithMiddleware` when they want HTTP access logs.
 
 ## Server Handler Logging
 
